@@ -1,0 +1,15 @@
+pluginManagement {
+    includeBuild('build-logic')
+}
+
+rootProject.name = 'runelite-parent'
+include(':client')
+include(':runelite-maven-plugin')
+include(':runelite-injector')
+include(':runelite-api')
+include(':cache')
+include(':jshell')
+include(':bootstrap')
+project(":bootstrap").projectDir = file('buildSrc')
+project(":client").projectDir = file('runelite-client')
+project(":jshell").projectDir = file('runelite-jshell')
