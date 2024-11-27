@@ -29,6 +29,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.runelite.api.ItemID;
+import net.runelite.client.plugins.toa.features.het.pickaxe.PickaxeUtil;
 
 /**
  * These are useful item collections.
@@ -96,7 +97,7 @@ public enum ItemCollections
 		ItemID.CRYSTAL_AXE,
 		ItemID.CRYSTAL_FELLING_AXE,
 		ItemID._3RD_AGE_AXE,
-		ItemID.TRAILBLAZER_AXE,
+		PickaxeUtil.TRAILBLAZER_AXE,
 		ItemID.INFERNAL_AXE_OR,
 		ItemID.INFERNAL_AXE,
 		ItemID.DRAGON_AXE_OR,
@@ -121,7 +122,7 @@ public enum ItemCollections
 
 	PICKAXES("Pickaxe", ImmutableList.of(
 		ItemID.INFERNAL_PICKAXE_OR,
-		ItemID.TRAILBLAZER_PICKAXE,
+		PickaxeUtil.TRAILBLAZER_PICKAXE,
 		ItemID.CRYSTAL_PICKAXE,
 		ItemID.CRYSTAL_PICKAXE_INACTIVE,
 		ItemID._3RD_AGE_PICKAXE,
@@ -142,7 +143,7 @@ public enum ItemCollections
 
 	HARPOONS("Harpoon", ImmutableList.of(
 		ItemID.INFERNAL_HARPOON_OR,
-		ItemID.TRAILBLAZER_HARPOON,
+		PickaxeUtil.TRAILBLAZER_HARPOON,
 		ItemID.INFERNAL_HARPOON,
 		ItemID.DRAGON_HARPOON,
 		ItemID.BARBTAIL_HARPOON,

@@ -13,6 +13,10 @@ import net.runelite.api.ItemID;
 public class PickaxeUtil
 {
 
+	public static final int TRAILBLAZER_AXE = 25110;
+	public static final int TRAILBLAZER_PICKAXE = 25112;
+	public static final int TRAILBLAZER_HARPOON = 25114;
+
 	private static final Set<Integer> PICKAXE_IDS = ImmutableSet.of(
 		ItemID.BRONZE_PICKAXE,
 		ItemID.IRON_PICKAXE,
@@ -34,7 +38,7 @@ public class PickaxeUtil
 		ItemID.CRYSTAL_PICKAXE_INACTIVE,
 		ItemID._3RD_AGE_PICKAXE,
 		ItemID.GILDED_PICKAXE,
-		ItemID.TRAILBLAZER_PICKAXE
+		TRAILBLAZER_PICKAXE
 	);
 
 	private static final int VARBIT_PICKAXE_STORAGE = 14440;
