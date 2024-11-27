@@ -16,6 +16,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.net.URL;
 
 import com.google.archivepatcher.applier.FileByFileV1DeltaApplier;
@@ -25,8 +26,7 @@ import com.google.archivepatcher.applier.FileByFileV1DeltaApplier;
  */
 public class Injector {
 	private static final File FILE_OUTPUT = new File("lib/runelite-injected.bin");
-	private static final File FILE_RUNELITE_ORIGINAL = new File("lib/runelite-original.jar");
-	private static final File FILE_RUNELITE_PATCH = new File("lib/runelite-patch.jar");
+	private static final File FILE_RUNELITE_ORIGINAL = new File("lib/runelite-injected-original.bin");
 
 	public static void main(String[] args) throws Exception {
 		var runeliteInjectedData = applyDelta();
@@ -88,12 +88,7 @@ public class Injector {
 	}
 
 	static byte[] applyDelta() throws Exception {
-		var injectionOutput = new ByteArrayOutputStream();
-		var patchJar = JarFile.fromFile(FILE_RUNELITE_PATCH);
-		var patchJarClientPatch = patchJar.entryDataByName("client.patch");
-		new FileByFileV1DeltaApplier().applyDelta(FILE_RUNELITE_ORIGINAL, new ByteArrayInputStream(patchJarClientPatch),
-				injectionOutput);
-		return injectionOutput.toByteArray();
+		return Files.readAllBytes(FILE_RUNELITE_ORIGINAL.toPath());
 	}
 
 	static class ClassGroup {

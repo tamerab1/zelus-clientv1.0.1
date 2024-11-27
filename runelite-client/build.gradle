@@ -35,6 +35,7 @@ dependencies {
 	api project(':jshell')
 	api libs.net.runelite.arn.http.api
 	api libs.net.runelite.discord
+	api "org.json:json:20240303"
 	runtimeOnly libs.org.lwjgl.lwjgl
 		runtimeOnly(variantOf(libs.org.lwjgl.lwjgl) { classifier("natives-linux") })
 		runtimeOnly(variantOf(libs.org.lwjgl.lwjgl) { classifier("natives-macos") })
@@ -60,7 +61,6 @@ dependencies {
 	annotationProcessor libs.org.projectlombok.lombok
 	compileOnly libs.org.jetbrains.annotations
 	compileOnly libs.net.runelite.orange.myextensions
-	api name: "runelite-patch"
 }
 
 // Define the localGitCommit property
