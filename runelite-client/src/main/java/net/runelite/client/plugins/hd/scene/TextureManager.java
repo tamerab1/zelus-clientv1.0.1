@@ -65,9 +65,8 @@ import static net.runelite.client.plugins.hd.utils.ResourcePath.path;
 public class TextureManager {
 	private static final String[] SUPPORTED_IMAGE_EXTENSIONS = { "png", "jpg" };
 	private static final ResourcePath TEXTURE_PATH = Props.getPathOrDefault(
-		"rlhd.texture-path",
-		() -> path(TextureManager.class, "textures")
-	);
+			"rlhd.texture-path",
+			() -> path(TextureManager.class, "textures"));
 
 	@Inject
 	private Client client;
@@ -104,7 +103,8 @@ public class TextureManager {
 		clientThread.invoke(this::ensureMaterialsAreLoaded);
 
 		TEXTURE_PATH.watch((path, first) -> {
-			if (first) return;
+			if (first)
+				return;
 			log.debug("Texture changed: {}", path);
 
 			if (pendingReload == null || pendingReload.cancel(false) || pendingReload.isDone())
@@ -148,8 +148,8 @@ public class TextureManager {
 
 	public int getMaterialIndex(@Nonnull Material material, int vanillaTextureIndex) {
 		if (material == Material.VANILLA &&
-			vanillaTextureIndex >= 0 &&
-			vanillaTextureIndex < vanillaTextureIndexToMaterialUniformIndex.length)
+				vanillaTextureIndex >= 0 &&
+				vanillaTextureIndex < vanillaTextureIndexToMaterialUniformIndex.length)
 			return vanillaTextureIndexToMaterialUniformIndex[vanillaTextureIndex];
 		return materialOrdinalToMaterialUniformIndex[material.ordinal()];
 	}
@@ -167,9 +167,10 @@ public class TextureManager {
 		for (int i = 0; i < vanillaTextures.length; i++) {
 			var texture = vanillaTextures[i];
 			if (texture != null) {
-				int[] pixels = textureProvider.load(i);
-				if (pixels == null)
-					return false;
+				int[] pixels = loadTexture(textureProvider, i);
+				if (pixels == null) {
+					System.err.println("Vanilla texture not found: " + i);
+				}
 			}
 		}
 
@@ -190,7 +191,8 @@ public class TextureManager {
 		for (var material : Material.getActiveMaterials())
 			materialUniformEntries.add(new MaterialEntry(material, material.vanillaTextureIndex));
 
-		// Add texture layers for each material that adds its own texture, after resolving replacements
+		// Add texture layers for each material that adds its own texture, after
+		// resolving replacements
 		ArrayList<TextureLayer> textureLayers = new ArrayList<>();
 		materialOrdinalToTextureLayer = new int[Material.values().length];
 		Arrays.fill(materialOrdinalToTextureLayer, -1);
@@ -203,10 +205,11 @@ public class TextureManager {
 		// Prepare mappings for materials that don't provide their own textures
 		for (var material : Material.values())
 			if (materialOrdinalToTextureLayer[material.ordinal()] == -1)
-				materialOrdinalToTextureLayer[material.ordinal()] =
-					materialOrdinalToTextureLayer[material.resolveTextureMaterial().ordinal()];
+				materialOrdinalToTextureLayer[material.ordinal()] = materialOrdinalToTextureLayer[material
+						.resolveTextureMaterial().ordinal()];
 
-		// Add material uniforms and texture layers for any vanilla textures lacking a material definition
+		// Add material uniforms and texture layers for any vanilla textures lacking a
+		// material definition
 		vanillaTextureIndexToTextureLayer = new int[vanillaTextures.length];
 		Arrays.fill(vanillaTextureIndexToTextureLayer, -1);
 		for (int i = 0; i < vanillaTextures.length; i++) {
@@ -276,7 +279,7 @@ public class TextureManager {
 				if (texture == null)
 					continue;
 
-				int[] pixels = textureProvider.load(vanillaIndex);
+				int[] pixels = loadTexture(textureProvider, vanillaIndex);
 				if (pixels == null) {
 					log.warn("No pixels for vanilla texture at index {}", vanillaIndex);
 					continue;
@@ -289,7 +292,8 @@ public class TextureManager {
 
 				for (int j = 0; j < pixels.length; j++) {
 					int rgb = pixels[j];
-					// Black is considered transparent in vanilla, with anything else being fully opaque
+					// Black is considered transparent in vanilla, with anything else being fully
+					// opaque
 					int alpha = rgb == 0 ? 0 : 0xFF;
 					vanillaImage.setRGB(j % 128, j / 128, alpha << 24 | rgb & 0xFFFFFF);
 				}
@@ -307,7 +311,8 @@ public class TextureManager {
 			}
 		}
 
-		// Convert vanilla texture animations to the same format as Material scroll parameters
+		// Convert vanilla texture animations to the same format as Material scroll
+		// parameters
 		for (int i = 0; i < vanillaTextures.length; i++) {
 			var texture = vanillaTextures[i];
 			if (texture == null)
@@ -373,22 +378,25 @@ public class TextureManager {
 
 		// Go from TYPE_4BYTE_ABGR in the BufferedImage to RGBA
 		glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0,
-			layer.index, textureSize, textureSize, 1,
-			GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer
-		);
+				layer.index, textureSize, textureSize, 1,
+				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
 	}
 
 	private void setAnisotropicFilteringLevel() {
 		int level = config.anisotropicFilteringLevel();
 		if (level == 0) {
-			//level = 0 means no mipmaps and no anisotropic filtering
+			// level = 0 means no mipmaps and no anisotropic filtering
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		} else {
-			// level = 1 means with mipmaps but without anisotropic filtering GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT defaults to 1.0 which is off
-			// level > 1 enables anisotropic filtering. It's up to the vendor what the values mean
-			// Even if anisotropic filtering isn't supported, mipmaps will be enabled with any level >= 1
-			// Trilinear filtering is used for HD textures as linear filtering produces noisy textures
+			// level = 1 means with mipmaps but without anisotropic filtering
+			// GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT defaults to 1.0 which is off
+			// level > 1 enables anisotropic filtering. It's up to the vendor what the
+			// values mean
+			// Even if anisotropic filtering isn't supported, mipmaps will be enabled with
+			// any level >= 1
+			// Trilinear filtering is used for HD textures as linear filtering produces
+			// noisy textures
 			// that are very noticeable on terrain
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -396,7 +404,7 @@ public class TextureManager {
 
 		if (GL.getCapabilities().GL_EXT_texture_filter_anisotropic) {
 			final float maxSamples = glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-			//Clamp from 1 to max GL says it supports.
+			// Clamp from 1 to max GL says it supports.
 			final float anisoLevel = Math.max(1, Math.min(maxSamples, level));
 			glTexParameterf(GL_TEXTURE_2D_ARRAY, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel);
 		}
@@ -413,8 +421,8 @@ public class TextureManager {
 			writeMaterialData(buffer, entry);
 		}
 		for (var material : Material.values())
-			materialOrdinalToMaterialUniformIndex[material.ordinal()] =
-				materialOrdinalToMaterialUniformIndex[material.resolveReplacements().ordinal()];
+			materialOrdinalToMaterialUniformIndex[material.ordinal()] = materialOrdinalToMaterialUniformIndex[material
+					.resolveReplacements().ordinal()];
 		return buffer.flip();
 	}
 
@@ -444,62 +452,71 @@ public class TextureManager {
 		}
 
 		buffer
-			.putInt(baseColorTextureIndex)
-			.putInt(getTextureLayer(m.normalMap))
-			.putInt(getTextureLayer(m.displacementMap))
-			.putInt(getTextureLayer(m.roughnessMap))
-			.putInt(getTextureLayer(m.ambientOcclusionMap))
-			.putInt(getTextureLayer(m.flowMap))
-			.putInt(
-				(m.overrideBaseColor ? 1 : 0) << 2 |
-				(m.unlit ? 1 : 0) << 1 |
-				(m.hasTransparency ? 1 : 0)
-			)
-			.putFloat(m.brightness)
-			.putFloat(m.displacementScale)
-			.putFloat(m.specularStrength)
-			.putFloat(m.specularGloss)
-			.putFloat(m.flowMapStrength)
-			.putFloat(m.flowMapDuration[0])
-			.putFloat(m.flowMapDuration[1])
-			.putFloat(scrollSpeedX)
-			.putFloat(scrollSpeedY)
-			.putFloat(1 / m.textureScale[0])
-			.putFloat(1 / m.textureScale[1])
-			.putFloat(1 / m.textureScale[2])
-			.putFloat(0); // align vec4
+				.putInt(baseColorTextureIndex)
+				.putInt(getTextureLayer(m.normalMap))
+				.putInt(getTextureLayer(m.displacementMap))
+				.putInt(getTextureLayer(m.roughnessMap))
+				.putInt(getTextureLayer(m.ambientOcclusionMap))
+				.putInt(getTextureLayer(m.flowMap))
+				.putInt(
+						(m.overrideBaseColor ? 1 : 0) << 2 |
+								(m.unlit ? 1 : 0) << 1 |
+								(m.hasTransparency ? 1 : 0))
+				.putFloat(m.brightness)
+				.putFloat(m.displacementScale)
+				.putFloat(m.specularStrength)
+				.putFloat(m.specularGloss)
+				.putFloat(m.flowMapStrength)
+				.putFloat(m.flowMapDuration[0])
+				.putFloat(m.flowMapDuration[1])
+				.putFloat(scrollSpeedX)
+				.putFloat(scrollSpeedY)
+				.putFloat(1 / m.textureScale[0])
+				.putFloat(1 / m.textureScale[1])
+				.putFloat(1 / m.textureScale[2])
+				.putFloat(0); // align vec4
 	}
 
 	private ByteBuffer generateWaterTypeUniformBuffer() {
 		ByteBuffer buffer = BufferUtils.createByteBuffer(WaterType.values().length * 28 * SCALAR_BYTES);
 		for (WaterType type : WaterType.values())
 			buffer
-				.putInt(type.flat ? 1 : 0)
-				.putFloat(type.specularStrength)
-				.putFloat(type.specularGloss)
-				.putFloat(type.normalStrength)
-				.putFloat(type.baseOpacity)
-				.putInt(type.hasFoam ? 1 : 0)
-				.putFloat(type.duration)
-				.putFloat(type.fresnelAmount)
-				.putFloat(type.surfaceColor[0])
-				.putFloat(type.surfaceColor[1])
-				.putFloat(type.surfaceColor[2])
-				.putFloat(0) // pad vec4
-				.putFloat(type.foamColor[0])
-				.putFloat(type.foamColor[1])
-				.putFloat(type.foamColor[2])
-				.putFloat(0) // pad vec4
-				.putFloat(type.depthColor[0])
-				.putFloat(type.depthColor[1])
-				.putFloat(type.depthColor[2])
-				.putFloat(0) // pad vec4
-				.putFloat(type.causticsStrength)
-				.putInt(getTextureLayer(type.normalMap))
-				.putInt(getTextureLayer(Material.WATER_FOAM))
-				.putInt(getTextureLayer(Material.WATER_FLOW_MAP))
-				.putInt(getTextureLayer(Material.UNDERWATER_FLOW_MAP))
-				.putFloat(0).putFloat(0).putFloat(0); // pad vec4
+					.putInt(type.flat ? 1 : 0)
+					.putFloat(type.specularStrength)
+					.putFloat(type.specularGloss)
+					.putFloat(type.normalStrength)
+					.putFloat(type.baseOpacity)
+					.putInt(type.hasFoam ? 1 : 0)
+					.putFloat(type.duration)
+					.putFloat(type.fresnelAmount)
+					.putFloat(type.surfaceColor[0])
+					.putFloat(type.surfaceColor[1])
+					.putFloat(type.surfaceColor[2])
+					.putFloat(0) // pad vec4
+					.putFloat(type.foamColor[0])
+					.putFloat(type.foamColor[1])
+					.putFloat(type.foamColor[2])
+					.putFloat(0) // pad vec4
+					.putFloat(type.depthColor[0])
+					.putFloat(type.depthColor[1])
+					.putFloat(type.depthColor[2])
+					.putFloat(0) // pad vec4
+					.putFloat(type.causticsStrength)
+					.putInt(getTextureLayer(type.normalMap))
+					.putInt(getTextureLayer(Material.WATER_FOAM))
+					.putInt(getTextureLayer(Material.WATER_FLOW_MAP))
+					.putInt(getTextureLayer(Material.UNDERWATER_FLOW_MAP))
+					.putFloat(0).putFloat(0).putFloat(0); // pad vec4
 		return buffer.flip();
+	}
+
+	static int[] loadTexture(TextureProvider provider, int id) {
+		try {
+			int[] pixels = provider.load(id);
+			return pixels;
+		} catch (Exception e) {
+			System.err.println("Unable to load texture: " + id);
+			return null;
+		}
 	}
 }
