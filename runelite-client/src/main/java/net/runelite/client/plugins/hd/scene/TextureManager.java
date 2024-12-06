@@ -510,7 +510,7 @@ public class TextureManager {
 		return buffer.flip();
 	}
 
-	static int[] loadTexture(TextureProvider provider, int id) {
+	private static int[] loadTexture(TextureProvider provider, int id) {
 		try {
 			int[] pixels = provider.load(id);
 			return pixels;
