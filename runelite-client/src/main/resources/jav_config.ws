@@ -55,7 +55,7 @@ param=9=ElZAIrq5NpKN6D3mDdihco3oPeYN2KFy2DCquj7JMmECPmLrDP3Bnw
 param=15=0
 param=10=5
 param=8=true
-param=17=https://api.lunex.gg/worldinfo/all/slr/
+param=17=https://api.reason.gg/worldinfo/all/slr/
 param=2=https://payments.jagex.com/operator/v1/
 param=18=
 param=4=45569

@@ -78,7 +78,8 @@ public class SplashScreen extends JFrame implements ActionListener
 
 		Font font = new Font(Font.DIALOG, Font.PLAIN, 12);
 
-		BufferedImage logo = ImageUtil.loadImageResource(SplashScreen.class, "runelite_splash.png");
+		BufferedImage _logo = ImageUtil.loadImageResource(SplashScreen.class, "runelite_splash.png");
+		java.awt.Image logo = _logo.getScaledInstance(WIDTH, WIDTH, java.awt.Image.SCALE_SMOOTH);
 		JLabel logoLabel = new JLabel(new ImageIcon(logo));
 		pane.add(logoLabel);
 		logoLabel.setBounds(0, 0, WIDTH, WIDTH);
