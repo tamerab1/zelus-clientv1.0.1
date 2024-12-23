@@ -57,6 +57,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -86,6 +88,7 @@ public class PluginManager
 	 * Base package where the core plugins are
 	 */
 	private static final String PLUGIN_PACKAGE = "net.runelite.client.plugins";
+	private static final String PLUGIN_PACKAGE_HD = "rs117.hd";
 	private static final File SIDELOADED_PLUGINS = new File(RuneLite.RUNELITE_DIR, "sideloaded-plugins");
 
 	private final boolean developerMode;
@@ -263,7 +266,11 @@ public class PluginManager
 		SplashScreen.stage(.59, null, "Loading plugins");
 		ClassPath classPath = ClassPath.from(getClass().getClassLoader());
 
-		List<Class<?>> plugins = classPath.getTopLevelClassesRecursive(PLUGIN_PACKAGE).stream()
+		;
+		List<Class<?>> plugins = Stream.concat(
+				classPath.getTopLevelClassesRecursive(PLUGIN_PACKAGE).stream(),
+				classPath.getTopLevelClassesRecursive(PLUGIN_PACKAGE_HD).stream()
+		)
 			.map(ClassInfo::load)
 			.collect(Collectors.toList());
 

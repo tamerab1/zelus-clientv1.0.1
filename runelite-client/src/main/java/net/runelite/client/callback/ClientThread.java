@@ -46,7 +46,11 @@ public class ClientThread
 	{
 		invoke(() ->
 		{
-			r.run();
+			try {
+				r.run();
+			} catch(Throwable e) {
+				e.printStackTrace();
+			}
 			return true;
 		});
 	}
