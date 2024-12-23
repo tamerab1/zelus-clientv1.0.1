@@ -352,7 +352,6 @@ public class TextureManager {
 			try {
 				return path.loadImage();
 			} catch (Exception ex) {
-				ex.printStackTrace();
 				log.trace("Unable to load texture: {}", path, ex);
 			}
 		}

@@ -61,6 +61,8 @@ dependencies {
 	annotationProcessor libs.org.projectlombok.lombok
 	compileOnly libs.org.jetbrains.annotations
 	compileOnly libs.net.runelite.orange.myextensions
+
+	implementation(project(":117hd"))
 }
 
 // Define the localGitCommit property
