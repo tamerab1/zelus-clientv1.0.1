@@ -50,5 +50,5 @@ build:dev:
 
 publish:dev:
   extends: 
-    - .build
+    - .publish
     - .only_dev
