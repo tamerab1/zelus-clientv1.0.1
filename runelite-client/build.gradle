@@ -111,3 +111,31 @@ tasks.withType(BootstrapTask) {
 	group = "bootstrap"
 	gitCommit = project.ext.gitCommit
 }
+
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+tasks.register("publishGitlab") {
+	doLast {
+		var version = "1.10.33-SNAPSHOT";
+		var project_id = System.getenv("CI_PROJECT_ID");
+		var deploy_token = System.getenv("GITLAB_DEPLOY_TOKEN");
+		var gitlab_host = "https://gitlab.com";
+		var file_path = "client/latest/client.jar";
+		var url = String.format("%s/api/v4/projects/%s/packages/generic/%s", gitlab_host, project_id, file_path);
+		HttpRequest request = HttpRequest.newBuilder()
+				.PUT(HttpRequest.BodyPublishers.ofFile(java.nio.file.Path.of("$rootDir/runelite-client/build/libs/client-$version-all.jar")))
+				.uri(URI.create(url))
+				.header("DEPLOY-TOKEN", deploy_token)
+				.build();
+		var response = HttpClient.newHttpClient()
+				.send(request, HttpResponse.BodyHandlers.ofString());
+		if (response.statusCode() != 201) {
+			throw new RuntimeException("Unable to upload file " + response.body());
+		}
+	}
+	dependsOn("shadowJar")
+}

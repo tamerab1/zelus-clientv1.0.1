@@ -1,0 +1,54 @@
+stages:
+  - build
+  - publish
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  DOCKER_TLS_CERTDIR: ""
+
+.cache_gradle:
+  cache:
+    paths:
+      - ".gradle/wrapper"
+      - ".gradle/caches"
+      - ".gradle/jdks"
+
+.only_dev:
+  environment:
+    name: development
+  only:
+    - dev
+
+.update_configuration:
+  before_script:
+    - cp "$JAV_CONFIG" ./runelite-client/src/main/resources/jav_config.ws
+
+.build:
+  stage: build
+  image: eclipse-temurin:17-focal
+  extends: 
+    - .update_configuration
+    - .cache_gradle
+  script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - ./gradlew :client:shadowJar
+
+.publish:
+  stage: publish
+  image: eclipse-temurin:17-focal
+  extends: 
+    - .update_configuration
+    - .cache_gradle
+  script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - ./gradlew :client:publishGradle
+
+build:dev:
+  extends: 
+    - .build
+    - .only_dev
+
+publish:dev:
+  extends: 
+    - .build
+    - .only_dev

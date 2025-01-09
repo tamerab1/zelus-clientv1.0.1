@@ -9,5 +9,6 @@ project.properties
 .settings/
 .classpath
 .vscode
+bin/
 .factorypath
 .DS_Store
