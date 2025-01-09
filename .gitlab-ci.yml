@@ -41,7 +41,7 @@ variables:
     - .cache_gradle
   script:
     - export GRADLE_USER_HOME=`pwd`/.gradle
-    - ./gradlew :client:publishGradle
+    - ./gradlew :client:publishGitlab
 
 build:dev:
   extends: 
