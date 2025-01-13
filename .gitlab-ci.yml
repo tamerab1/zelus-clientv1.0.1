@@ -32,6 +32,7 @@ variables:
   script:
     - export GRADLE_USER_HOME=`pwd`/.gradle
     - ./gradlew :client:shadowJar
+    - ./gradlew :runelite-client-launcher:shadowJar
 
 .publish:
   stage: publish
@@ -42,6 +43,7 @@ variables:
   script:
     - export GRADLE_USER_HOME=`pwd`/.gradle
     - ./gradlew :client:publishGitlab
+    - ./gradlew :runelite-client-launcher:publishGitlab
 
 build:dev:
   extends: 
