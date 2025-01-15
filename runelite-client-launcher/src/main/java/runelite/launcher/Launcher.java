@@ -47,6 +47,7 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.IllegalComponentStateException;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -136,10 +137,12 @@ public class Launcher {
 	static void unpackJRE() throws Exception {
 		switch (OsCheck.getOperatingSystemType()) {
 			case Windows:
-			case Wine:
 				extractZip(jreFilePacked(), JRE_DIR);
 				break;
 			case Linux:
+				extractTarGZ(jreFilePacked(), JRE_DIR);
+				break;
+			case MacOSARM:
 				extractTarGZ(jreFilePacked(), JRE_DIR);
 				break;
 			default:
@@ -260,9 +263,10 @@ public class Launcher {
 	static File jreFilePacked() {
 		switch (OsCheck.getOperatingSystemType()) {
 			case Windows:
-			case Wine:
 				return new File(REASON_HOME, "jre.zip");
 			case Linux:
+				return new File(REASON_HOME, "jre.tar.gz");
+			case MacOSARM:
 				return new File(REASON_HOME, "jre.tar.gz");
 			default:
 				throw new RuntimeException();
@@ -272,10 +276,11 @@ public class Launcher {
 	static String javaDownloadLink() {
 		switch (OsCheck.getOperatingSystemType()) {
 			case Windows:
-			case Wine:
 				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_windows_hotspot_21.0.5_11.zip";
 			case Linux:
 				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_linux_hotspot_21.0.5_11.tar.gz";
+			case MacOSARM:
+				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_aarch64_mac_hotspot_21.0.5_11.tar.gz";
 			default:
 				throw new RuntimeException();
 		}
@@ -284,10 +289,11 @@ public class Launcher {
 	static String javaDownloadLinkSha256() {
 		switch (OsCheck.getOperatingSystemType()) {
 			case Windows:
-			case Wine:
 				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_windows_hotspot_21.0.5_11.zip.sha256.txt";
 			case Linux:
 				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_linux_hotspot_21.0.5_11.tar.gz.sha256.txt";
+			case MacOSARM:
+				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_aarch64_mac_hotspot_21.0.5_11.pkg.sha256.txt";
 			default:
 				throw new RuntimeException();
 		}
@@ -296,9 +302,10 @@ public class Launcher {
 	public static String getJavaExe() {
 		switch (OsCheck.getOperatingSystemType()) {
 			case Windows:
-			case Wine:
 				return new File(new File(JRE_DIR, "bin"), "java.exe").getAbsolutePath();
 			case Linux:
+				return new File(new File(JRE_DIR, "bin"), "java").getAbsolutePath();
+			case MacOSARM:
 				return new File(new File(JRE_DIR, "bin"), "java").getAbsolutePath();
 			default:
 				throw new RuntimeException();
@@ -999,7 +1006,7 @@ public class Launcher {
 		 * types of Operating Systems
 		 */
 		public enum OSType {
-			Windows, MacOS, Linux, Other, Wine
+			Windows, MacOS, MacOSARM, Linux
 		};
 
 		// cached result of OS detection
@@ -1014,14 +1021,19 @@ public class Launcher {
 		public static OSType getOperatingSystemType() {
 			if (detectedOS == null) {
 				String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
+				String arch = System.getProperty("os.arch");
 				if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
-					detectedOS = OSType.MacOS;
+					if (arch.equals("aarch64")) {
+						detectedOS = OSType.MacOSARM;
+					} else {
+						detectedOS = OSType.MacOS;
+					}
 				} else if (OS.indexOf("win") >= 0) {
 					detectedOS = OSType.Windows;
 				} else if (OS.indexOf("nux") >= 0) {
 					detectedOS = OSType.Linux;
 				} else {
-					detectedOS = OSType.Other;
+					throw new IllegalComponentStateException("Unknown operating system: " + OS + " arch: " + arch);
 				}
 			}
 			return detectedOS;
