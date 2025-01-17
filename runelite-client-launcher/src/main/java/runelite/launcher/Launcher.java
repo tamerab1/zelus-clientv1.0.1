@@ -171,19 +171,28 @@ public class Launcher {
 								f.getAbsolutePath());
 					}
 				} else {
-					int count;
-					byte data[] = new byte[BUFFER_SIZE];
 					File f = new File(out, entryName);
-					FileOutputStream fos = new FileOutputStream(f, false);
-					try (BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER_SIZE)) {
-						while ((count = tarIn.read(data, 0, BUFFER_SIZE)) != -1) {
-							dest.write(data, 0, count);
+					try {
+						if (!f.exists()) {
+							f.createNewFile();
 						}
-					}
-					Set<PosixFilePermission> perms = posixFromInt(entry.getMode());
-					Files.setPosixFilePermissions(f.toPath(), perms);
-					if (perms.contains(PosixFilePermission.OTHERS_EXECUTE) || perms.contains(PosixFilePermission.OWNER_EXECUTE)) {
-						f.setExecutable(true);
+						FileOutputStream fos = new FileOutputStream(f, false);
+						int count;
+						byte data[] = new byte[BUFFER_SIZE];
+						try (BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER_SIZE)) {
+							while ((count = tarIn.read(data, 0, BUFFER_SIZE)) != -1) {
+								dest.write(data, 0, count);
+							}
+						}
+						Set<PosixFilePermission> perms = posixFromInt(entry.getMode());
+						Files.setPosixFilePermissions(f.toPath(), perms);
+						if (perms.contains(PosixFilePermission.OTHERS_EXECUTE)
+								|| perms.contains(PosixFilePermission.OWNER_EXECUTE)) {
+							f.setExecutable(true);
+						}
+					} catch (Exception e) {
+						System.err.println("Error while extracting: " + f.getAbsolutePath());
+						e.printStackTrace();
 					}
 				}
 			}
