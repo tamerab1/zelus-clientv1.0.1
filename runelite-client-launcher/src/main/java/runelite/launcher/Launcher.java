@@ -315,7 +315,7 @@ public class Launcher {
 			case Linux:
 				return new File(new File(JRE_DIR, "bin"), "java").getAbsolutePath();
 			case MacOSARM:
-				return new File(new File(JRE_DIR, "bin"), "java").getAbsolutePath();
+				return new File(new File(JRE_DIR, "Contents/Home/bin"), "java").getAbsolutePath();
 			default:
 				throw new RuntimeException();
 		}
