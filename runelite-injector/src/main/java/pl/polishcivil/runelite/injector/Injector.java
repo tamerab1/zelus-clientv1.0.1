@@ -40,6 +40,7 @@ public class Injector {
 		Host.apply(classGroup);
 		Varp.apply(classGroup);
 		RSA.apply(classGroup);
+		ClanChatCount.apply(classGroup);
 
 		var loader = new URLClassLoader(new URL[] { FILE_RUNELITE_ORIGINAL.toURI().toURL() });
 		for (var node : classGroup.nodes.entrySet()) {
