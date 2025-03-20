@@ -45,17 +45,17 @@ msg=new_version=Update available! You can now launch the client directly from th
 msg=new_version_linktext=Open OldSchool Homepage
 msg=new_version_link=http://oldschool.runescape.com/
 param=14=0
-param=12=1
+param=12=301
 param=11=https://auth.jagex.com/
 param=13=.runescape.com
-param=3=true
+param=3=false
 param=6=0
 param=7=0
 param=9=ElZAIrq5NpKN6D3mDdihco3oPeYN2KFy2DCquj7JMmECPmLrDP3Bnw
 param=15=0
 param=10=5
 param=8=true
-param=17=https://api.reason.gg/worldinfo/all/slr/
+param=17=http://www.runescape.com/g=oldscape/slr.ws?order=LPWM
 param=2=https://payments.jagex.com/operator/v1/
 param=18=
 param=4=45569
@@ -63,4 +63,3 @@ param=1=1
 param=19=196515767263-1oo20deqm6edn7ujlihl6rpadk9drhva.apps.googleusercontent.com
 param=16=false
 param=5=0
-param=25=223

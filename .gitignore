@@ -1,4 +1,7 @@
 target
+build
+.gradle
+generated-src
 nbactions.xml
 nb-configuration.xml
 /nbproject/

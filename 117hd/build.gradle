@@ -10,11 +10,8 @@ repositories {
 	mavenCentral()
 }
 
-def runeLiteVersion = '1.10.+'
-
 dependencies {
-	compileOnly group: 'net.runelite', name: 'client', version: runeLiteVersion
-
+	compileOnly project(":client")
 	annotationProcessor libs.org.projectlombok.lombok
 	compileOnly libs.org.projectlombok.lombok
 }

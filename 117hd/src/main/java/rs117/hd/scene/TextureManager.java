@@ -168,10 +168,8 @@ public class TextureManager {
 			var texture = vanillaTextures[i];
 			if (texture != null) {
 				int[] pixels = textureProvider.load(i);
-				if (pixels == null) {
-					System.err.println("Unable to load texture: " + i);
-	 				return false;
-				}
+				if (pixels == null)
+					return false;
 			}
 		}
 
@@ -280,7 +278,6 @@ public class TextureManager {
 
 				int[] pixels = textureProvider.load(vanillaIndex);
 				if (pixels == null) {
-					System.err.println("Unable to load texture: " + vanillaIndex);
 					log.warn("No pixels for vanilla texture at index {}", vanillaIndex);
 					continue;
 				}

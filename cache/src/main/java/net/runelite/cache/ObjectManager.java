@@ -97,6 +97,7 @@ public class ObjectManager
 	public void java(File java) throws IOException
 	{
 		java.mkdirs();
+
 		try (IDClass ids = IDClass.create(java, "ObjectID");
 			IDClass nulls = IDClass.create(java, "NullObjectID"))
 		{

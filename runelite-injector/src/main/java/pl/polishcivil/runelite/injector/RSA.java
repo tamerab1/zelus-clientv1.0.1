@@ -22,6 +22,7 @@ public class RSA {
 			return filter(it);
 		}).forEach(it -> {
 			if (!it.keyNode.cst.equals("10001")) {
+				System.out.println("FOUND RSA " + it.keyNode.cst);
 				it.keyNode.cst = RSA;
 			}
 		});
@@ -29,7 +30,8 @@ public class RSA {
 
 	static Stream<Result> filter(Pair node) {
 		return instructions(node.method.instructions).filter(it -> {
-			if (it instanceof MethodInsnNode && ((MethodInsnNode) it).name.equals("<init>") && ((MethodInsnNode) it).owner.endsWith("BigInteger")) {
+			if (it instanceof MethodInsnNode && ((MethodInsnNode) it).name.equals("<init>")
+					&& ((MethodInsnNode) it).owner.endsWith("BigInteger")) {
 				var v0 = it.getPrevious();
 				var v1 = it.getPrevious().getPrevious();
 				return v0.getOpcode() == Opcodes.BIPUSH && v1 instanceof LdcInsnNode;

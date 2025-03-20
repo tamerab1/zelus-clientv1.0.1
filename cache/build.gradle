@@ -38,3 +38,16 @@ configurations {
         extendsFrom = extendsFrom.findAll { it != configurations.antlr }
     }
 }
+
+tasks.register("dumpcache", JavaExec.class) {
+    classpath = project.sourceSets.main.runtimeClasspath
+    workingDir = rootDir
+    args(
+            "--cache", System.getProperty("user.home") + "/.runelite/jagexcache/oldschool/LIVE/",
+            "--items=runelite-api/src/main/java/net/runelite/api/",
+            "--npcs=runelite-api/src/main/java/net/runelite/api/",
+            "--objects=runelite-api/src/main/java/net/runelite/api/",
+            "--sprites=runelite-api/src/main/java/net/runelite/api/",
+    )
+    mainClass = "net.runelite.cache.Cache"
+}

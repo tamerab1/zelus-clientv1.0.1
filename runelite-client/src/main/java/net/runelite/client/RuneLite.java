@@ -77,6 +77,7 @@ import net.runelite.client.externalplugins.ExternalPluginManager;
 import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.rs.ClientLoader;
 import net.runelite.client.rs.ClientUpdateCheckMode;
+import net.runelite.client.rs.ReasonClientLoader;
 import net.runelite.client.ui.ClientUI;
 import net.runelite.client.ui.FatalErrorDialog;
 import net.runelite.client.ui.SplashScreen;
@@ -105,6 +106,7 @@ public class RuneLite {
 	public static final File SCREENSHOT_DIR = new File(RUNELITE_DIR, "screenshots");
 	public static final File LOGS_DIR = new File(RUNELITE_DIR, "logs");
 	public static final File DEFAULT_SESSION_FILE = new File(RUNELITE_DIR, "session");
+	public static final File NOTIFICATIONS_DIR = new File(RuneLite.RUNELITE_DIR, "notifications");
 
 	private static final int MAX_OKHTTP_CACHE_SIZE = 20 * 1024 * 1024; // 20mb
 	public static String USER_AGENT = "RuneLite/" + RuneLiteProperties.getVersion() + "-" + RuneLiteProperties.getCommit()
@@ -225,7 +227,7 @@ public class RuneLite {
 
 		try {
 			final RuntimeConfigLoader runtimeConfigLoader = new RuntimeConfigLoader(okHttpClient);
-			final ClientLoader clientLoader = new ClientLoader(okHttpClient, options.valueOf(updateMode), runtimeConfigLoader,
+			final ReasonClientLoader clientLoader = new ReasonClientLoader(okHttpClient, options.valueOf(updateMode), runtimeConfigLoader,
 					(String) options.valueOf("jav_config"));
 
 			new Thread(() -> {
@@ -236,21 +238,6 @@ public class RuneLite {
 			// final boolean developerMode = options.has("developer-mode") &&
 			// RuneLiteProperties.getLauncherVersion() == null;
 			final boolean developerMode = true;
-			// if (developerMode)
-			// {
-			// boolean assertions = false;
-			// assert assertions = true;
-			// if (!assertions)
-			// {
-			// SwingUtilities.invokeLater(() ->
-			// new FatalErrorDialog("Developers should enable assertions; Add `-ea` to your
-			// JVM arguments`")
-			// .addHelpButtons()
-			// .addBuildingGuide()
-			// .open());
-			// return;
-			// }
-			// }
 
 			log.info("RuneLite {} (launcher version {}) starting up, args: {}",
 					RuneLiteProperties.getVersion(), MoreObjects.firstNonNull(RuneLiteProperties.getLauncherVersion(), "unknown"),
@@ -327,9 +314,6 @@ public class RuneLite {
 
 		// Load user configuration
 		configManager.load();
-
-		// Tell the plugin manager if client is outdated or not
-		pluginManager.setOutdated(isOutdated);
 
 		// Update check requires ConfigManager to be ready before it runs
 		Updater updater = injector.getInstance(Updater.class);

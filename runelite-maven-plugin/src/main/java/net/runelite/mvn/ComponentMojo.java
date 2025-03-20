@@ -53,13 +53,13 @@ import org.tomlj.TomlTable;
 public class ComponentMojo extends AbstractMojo
 {
 	@Parameter(defaultValue = "${project}")
-	private MavenProject project;
+	public MavenProject project;
 
 	@Parameter(required = true)
-	private File inputDirectory;
+	public File inputDirectory;
 
 	@Parameter(required = true)
-	private File outputDirectory;
+	public File outputDirectory;
 
 	private final Log log = getLog();
 	private final Set<Integer> seenInterfaces = new HashSet<>();

@@ -76,7 +76,7 @@ public class Cache
 			System.out.println("Dumping items to " + itemdir);
 			dumpItems(store, new File(itemdir));
 		}
-		else if (cmd.hasOption("npcs"))
+		if (cmd.hasOption("npcs"))
 		{
 			String npcdir = cmd.getOptionValue("npcs");
 
@@ -89,7 +89,7 @@ public class Cache
 			System.out.println("Dumping npcs to " + npcdir);
 			dumpNpcs(store, new File(npcdir));
 		}
-		else if (cmd.hasOption("objects"))
+		if (cmd.hasOption("objects"))
 		{
 			String objectdir = cmd.getOptionValue("objects");
 
@@ -102,7 +102,7 @@ public class Cache
 			System.out.println("Dumping objects to " + objectdir);
 			dumpObjects(store, new File(objectdir));
 		}
-		else if (cmd.hasOption("sprites"))
+		if (cmd.hasOption("sprites"))
 		{
 			String spritedir = cmd.getOptionValue("sprites");
 
@@ -132,7 +132,6 @@ public class Cache
 	{
 		ItemManager dumper = new ItemManager(store);
 		dumper.load();
-		dumper.export(itemdir);
 		dumper.java(itemdir);
 	}
 
@@ -140,7 +139,6 @@ public class Cache
 	{
 		NpcManager dumper = new NpcManager(store);
 		dumper.load();
-		dumper.dump(npcdir);
 		dumper.java(npcdir);
 	}
 
@@ -148,7 +146,6 @@ public class Cache
 	{
 		ObjectManager dumper = new ObjectManager(store);
 		dumper.load();
-		dumper.dump(objectdir);
 		dumper.java(objectdir);
 	}
 
