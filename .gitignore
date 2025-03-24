@@ -15,3 +15,5 @@ project.properties
 bin/
 .factorypath
 .DS_Store
+
+runelite-injected.bin
