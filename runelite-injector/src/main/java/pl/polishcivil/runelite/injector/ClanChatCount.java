@@ -1,13 +1,14 @@
 package pl.polishcivil.runelite.injector;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.*;
-
-import org.objectweb.asm.*;
-import org.objectweb.asm.tree.*;
-
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.IntInsnNode;
 import pl.polishcivil.runelite.injector.Injector.ClassGroup;
+
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Host
@@ -28,7 +29,8 @@ public class ClanChatCount {
 
 	static Stream<IntInsnNode> constants(InsnList list, Function<Integer, Boolean> constant) {
 		return instructions(list).filter(it -> {
-			if (it.getOpcode() == Opcodes.SIPUSH && it instanceof IntInsnNode v) {
+			if (it.getOpcode() == Opcodes.SIPUSH && it instanceof IntInsnNode) {
+				var v = (IntInsnNode) it;
 				return constant.apply(v.operand);
 			}
 			return false;
