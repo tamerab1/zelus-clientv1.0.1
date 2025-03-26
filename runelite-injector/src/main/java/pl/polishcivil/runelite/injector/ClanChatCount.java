@@ -17,14 +17,15 @@ public class ClanChatCount {
 
 	static void apply(ClassGroup group) {
 		group.nodes.values().stream()
-			.filter(it -> it.name.equals("so"))
-			.flatMap(it -> {
-			return it.methods.stream().filter(m -> m.name.contains("init"));
-		}).forEach(method -> {
-			constants(method.instructions, (cst) -> cst == 500).forEach(ins -> {
-				ins.operand = 2048;
-			});
-		});
+				.filter(it -> it.interfaces.stream().anyMatch(cls -> cls.contains("FriendsChatManager")))
+				.flatMap(it -> {
+					return it.methods.stream().filter(m -> m.name.contains("init"));
+				}).forEach(method -> {
+					constants(method.instructions, (cst) -> cst == 500).forEach(ins -> {
+						System.out.println("clan count found");
+						ins.operand = 2048;
+					});
+				});
 	}
 
 	static Stream<IntInsnNode> constants(InsnList list, Function<Integer, Boolean> constant) {
