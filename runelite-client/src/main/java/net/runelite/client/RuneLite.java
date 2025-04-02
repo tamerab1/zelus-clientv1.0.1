@@ -31,34 +31,6 @@ import com.google.common.base.MoreObjects;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import java.applet.Applet;
-import java.io.File;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-import javax.swing.SwingUtilities;
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -76,7 +48,6 @@ import net.runelite.client.discord.DiscordService;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 import net.runelite.client.plugins.PluginManager;
-import net.runelite.client.rs.ClientLoader;
 import net.runelite.client.rs.ClientUpdateCheckMode;
 import net.runelite.client.rs.ReasonClientLoader;
 import net.runelite.client.ui.ClientUI;
@@ -89,14 +60,45 @@ import net.runelite.client.ui.overlay.worldmap.WorldMapOverlay;
 import net.runelite.client.util.OSType;
 import net.runelite.client.util.ReflectUtil;
 import net.runelite.http.api.RuneLiteAPI;
-import net.runelite.http.api.worlds.World;
-import net.runelite.http.api.worlds.WorldType;
-import okhttp3.*;
+import okhttp3.Cache;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.slf4j.LoggerFactory;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+
+import javax.annotation.Nullable;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import javax.swing.*;
+import java.applet.Applet;
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 
 @Singleton
 @Slf4j
@@ -228,6 +230,8 @@ public class RuneLite {
 
 		try {
 			final RuntimeConfigLoader runtimeConfigLoader = new RuntimeConfigLoader(okHttpClient);
+			//final ClientLoader clientLoader = new ClientLoader(okHttpClient, options.valueOf(updateMode), runtimeConfigLoader, (String) options.valueOf("jav_config"));
+
 			final ReasonClientLoader clientLoader = new ReasonClientLoader(okHttpClient, options.valueOf(updateMode), runtimeConfigLoader,
 					(String) options.valueOf("jav_config"));
 
@@ -492,43 +496,6 @@ public class RuneLite {
 			String key = entry.getKey(), value = entry.getValue();
 			log.debug("Setting property {}={}", key, value);
 			System.setProperty(key, value);
-		}
-	}
-
-	private void setupCompilerControl()
-	{
-		try
-		{
-			var file = Files.createTempFile("rl_compilercontrol", "");
-			try
-			{
-				if (runtimeConfig != null && runtimeConfig.getCompilerControl() != null)
-				{
-					var json = gson.toJson(runtimeConfig.getCompilerControl());
-					Files.writeString(file, json, StandardCharsets.UTF_8);
-				}
-				else
-				{
-					try (var in = RuneLite.class.getResourceAsStream("/compilercontrol.json"))
-					{
-						Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
-					}
-				}
-
-				ManagementFactory.getPlatformMBeanServer().invoke(
-					new ObjectName("com.sun.management:type=DiagnosticCommand"),
-					"compilerDirectivesAdd",
-					new Object[]{new String[]{file.toFile().getAbsolutePath()}},
-					new String[]{String[].class.getName()});
-			}
-			finally
-			{
-				Files.delete(file);
-			}
-		}
-		catch (Exception e)
-		{
-			log.info("Failed to set compiler control", e);
 		}
 	}
 
