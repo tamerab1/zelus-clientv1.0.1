@@ -43,7 +43,7 @@ public interface BankConfig extends Config
 	)
 	default boolean showGE()
 	{
-		return true;
+		return false;
 	}
 
 	@ConfigItem(
@@ -54,7 +54,7 @@ public interface BankConfig extends Config
 	)
 	default boolean showHA()
 	{
-		return false;
+		return true;
 	}
 
 	@ConfigItem(
