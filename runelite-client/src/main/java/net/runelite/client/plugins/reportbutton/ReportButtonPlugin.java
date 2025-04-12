@@ -207,7 +207,7 @@ public class ReportButtonPlugin extends Plugin
 		}
 
 		Duration duration = Duration.between(loginTime, Instant.now());
-		LocalTime time = LocalTime.ofSecondOfDay(duration.getSeconds());
+		LocalTime time = LocalTime.ofSecondOfDay(Math.min(86399, duration.getSeconds()));
 		return time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
 	}
 
