@@ -15,11 +15,17 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.net.URL;
 
 import com.google.archivepatcher.applier.FileByFileV1DeltaApplier;
+
+import pl.polishcivil.runelite.injector.inject.hwid.HWIDInject;
 
 /**
  * Injector
@@ -41,6 +47,7 @@ public class Injector {
 		Varp.apply(classGroup);
 		RSA.apply(classGroup);
 		ClanChatCount.apply(classGroup);
+		HWIDInject.apply(classGroup);
 
 		var loader = new URLClassLoader(new URL[] { FILE_RUNELITE_ORIGINAL.toURI().toURL() });
 		for (var node : classGroup.nodes.entrySet()) {
@@ -92,7 +99,7 @@ public class Injector {
 		return Files.readAllBytes(FILE_RUNELITE_ORIGINAL.toPath());
 	}
 
-	static class ClassGroup {
+	public static class ClassGroup {
 		public final HashMap<String, ClassNode> nodes = new HashMap<>();
 
 		public static ClassGroup fromJar(JarFile file) {
@@ -108,12 +115,46 @@ public class Injector {
 			return result;
 		}
 
+		public void add(ClassNode node) {
+			this.nodes.put(node.name + ".class", node);
+		}
+
 		static boolean isJagexClass(String entry) {
+			if (entry.equals("client.class")) {
+				return true;
+			}
 			if (entry.length() <= 3 + 6 && !entry.contains("/") && entry.endsWith(".class")) {
 				return true;
 			}
 			return false;
 		}
+	}
+
+	public static ClassNode read(byte[] data) {
+		var node = new ClassNode();
+		var reader = new ClassReader(data);
+		reader.accept(node, 0);
+		node.version = Opcodes.V11;
+		return node;
+	}
+
+	public static boolean hasLdc(MethodNode node, Object value) {
+		return hasLdc(node.instructions, value);
+	}
+
+	public static boolean hasLdc(InsnList list, Object value) {
+		return findLdc(list, value) != null;
+	}
+
+	public static LdcInsnNode findLdc(InsnList list, Object value) {
+		for (var ins : list) {
+			if (ins instanceof LdcInsnNode ldc) {
+				if (ldc.cst.equals(value)) {
+					return ldc;
+				}
+			}
+		}
+		return null;
 	}
 
 	static class JarFile {

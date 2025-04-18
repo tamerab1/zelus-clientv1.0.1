@@ -22,5 +22,7 @@ dependencies {
 description = 'RuneLite JShell'
 
 java {
-    withJavadocJar()
+		withJavadocJar()
+		sourceCompatibility = JavaVersion.VERSION_11
+		targetCompatibility = JavaVersion.VERSION_11
 }

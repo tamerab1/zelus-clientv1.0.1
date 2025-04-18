@@ -1,7 +1,5 @@
 package pl.polishcivil.runelite.injector;
 
-import java.util.List;
-import java.util.function.Function;
 import java.util.stream.*;
 
 import org.objectweb.asm.*;

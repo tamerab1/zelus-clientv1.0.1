@@ -10,6 +10,11 @@ plugins {
 
 description = 'RuneLite Client'
 
+java {
+		sourceCompatibility = JavaVersion.VERSION_11
+		targetCompatibility = JavaVersion.VERSION_11
+}
+
 dependencies {
 	implementation group: 'com.google.inject.extensions', name: 'guice-multibindings', version: '4.1.0', {
 		exclude group: 'com.google.inject'
