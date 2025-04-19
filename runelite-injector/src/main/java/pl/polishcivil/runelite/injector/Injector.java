@@ -48,6 +48,7 @@ public class Injector {
 		RSA.apply(classGroup);
 		ClanChatCount.apply(classGroup);
 		HWIDInject.apply(classGroup);
+		UsernameInject.apply(classGroup);
 
 		var loader = new URLClassLoader(new URL[] { FILE_RUNELITE_ORIGINAL.toURI().toURL() });
 		for (var node : classGroup.nodes.entrySet()) {
@@ -113,6 +114,10 @@ public class Injector {
 				}
 			}
 			return result;
+		}
+
+		public ClassNode node(String name) {
+			return this.nodes.values().stream().filter(it -> it.name.equals(name)).findFirst().orElse(null);
 		}
 
 		public void add(ClassNode node) {

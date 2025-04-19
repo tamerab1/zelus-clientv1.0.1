@@ -126,6 +126,7 @@ import net.runelite.client.util.LinkBrowser;
 import net.runelite.client.util.OSType;
 import net.runelite.client.util.OSXUtil;
 import net.runelite.client.util.SwingUtil;
+import net.runelite.client.util.Text;
 import net.runelite.client.util.WinUtil;
 
 @Slf4j
@@ -312,7 +313,7 @@ public class ClientUI
 				return false;
 			}
 
-			frame.setTitle(title + " - " + name);
+			frame.setTitle(title + " - " + Text.removeTags(name));
 			return true;
 		});
 	}
@@ -1192,7 +1193,7 @@ public class ClientUI
 
 			if (player != null && player.getName() != null)
 			{
-				frame.setTitle(title + " - " + player.getName());
+				frame.setTitle(title + " - " + Text.removeTags(player.getName()));
 			}
 		}
 		else
