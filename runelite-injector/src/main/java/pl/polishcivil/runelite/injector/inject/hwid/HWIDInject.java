@@ -36,7 +36,7 @@ public class HWIDInject {
 					var instructions = new InsnList();
 					instructions.add(new InsnNode(Opcodes.POP));
 					instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "pl/polishcivil/runelite/injector/inject/hwid/HWID",
-							"getHWID", "()Ljava/lang/String;"));
+							"hwid", "()Ljava/lang/String;"));
 					insList.insertBefore(fIns, instructions);
 					break;
 				}
