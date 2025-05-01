@@ -28,6 +28,7 @@ variables:
 .update_configuration:
   before_script:
     - cp "$JAV_CONFIG" ./runelite-client/src/main/resources/jav_config.ws
+    - cp "$LAUNCHER_PROPERTIES" ./runelite-client-launcher/src/main/resources/properties.ini
 
 .build:
   stage: build

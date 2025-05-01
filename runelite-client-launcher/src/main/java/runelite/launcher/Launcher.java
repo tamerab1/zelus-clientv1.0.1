@@ -51,15 +51,9 @@ import java.awt.IllegalComponentStateException;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-import java.awt.image.DirectColorModel;
-import java.awt.image.PixelGrabber;
 import java.awt.image.RescaleOp;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.GrayFilter;
 
@@ -67,6 +61,22 @@ public class Launcher {
 	static File REASON_HOME = new File(System.getProperty("user.home"), ".reason");
 	static File CLIENT_FILE = new File(REASON_HOME, "betaclient.jar");
 	static File JRE_DIR = new File(REASON_HOME, "jre");
+
+	static String CLIENT_VERSION = "development-latest";
+	static String CLIENT_URL = "https://gitlab.com/api/v4/projects/66004513/packages/generic/client/" + CLIENT_VERSION
+			+ "/client.jar";
+	static String CLIENT_SHA_URL = "https://gitlab.com/api/v4/projects/66004513/packages/generic/client/" + CLIENT_VERSION
+			+ "/client.sha256";
+
+	static {
+		try {
+			Properties properties = new Properties();
+			properties.load(Launcher.class.getResourceAsStream("/properties.ini"));
+			CLIENT_VERSION = properties.getProperty("client_version");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	public static void main(String[] args) throws Exception {
 		if (!REASON_HOME.exists()) {
@@ -100,8 +110,8 @@ public class Launcher {
 		}
 
 		syncFile(CLIENT_FILE,
-				"https://gitlab.com/api/v4/projects/66004513/packages/generic/client/latest/client.jar",
-				"https://gitlab.com/api/v4/projects/66004513/packages/generic/client/latest/client.sha256",
+				CLIENT_URL,
+				CLIENT_SHA_URL,
 				(p, d, t) -> {
 					SplashScreen.stage(0, 1, "Loading...", "Checking for client update.", (int) d, (int) t, false);
 				},
