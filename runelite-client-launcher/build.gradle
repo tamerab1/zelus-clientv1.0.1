@@ -39,12 +39,13 @@ tasks.register("publishGitlab") {
 	doLast {
 		var project_id = System.getenv("CI_PROJECT_ID");
 		var deploy_token = System.getenv("GITLAB_DEPLOY_TOKEN");
+		var ci_env = System.getenv("CI_ENVIRONMENT_NAME");
 		var gitlab_host = "https://gitlab.com";
 		var file_path = "$rootDir/runelite-client-launcher/build/libs/runelite-client-launcher-all.jar";
 		var file_sha = fileSHA(file_path);
 
 		{
-			var file_url_path = "client-launcher/latest/client-launcher.jar";
+			var file_url_path = "client-launcher/${ci_env}/latest/client-launcher.jar";
 			var url = String.format("%s/api/v4/projects/%s/packages/generic/%s", gitlab_host, project_id, file_url_path);
 			HttpRequest request = HttpRequest.newBuilder()
 					.PUT(HttpRequest.BodyPublishers.ofFile(java.nio.file.Path.of(file_path)))
@@ -59,7 +60,7 @@ tasks.register("publishGitlab") {
 		}
 
 		{
-			var file_url_path = "client-launcher/latest/client-launcher.sha256";
+			var file_url_path = "client-launcher/${ci_env}/client-launcher.sha256";
 			var url = String.format("%s/api/v4/projects/%s/packages/generic/%s", gitlab_host, project_id, file_url_path);
 			HttpRequest request = HttpRequest.newBuilder()
 					.PUT(HttpRequest.BodyPublishers.ofString(file_sha))

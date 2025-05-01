@@ -19,6 +19,12 @@ variables:
   only:
     - dev
 
+.only_master:
+  environment:
+    name: production
+  only:
+    - master
+
 .update_configuration:
   before_script:
     - cp "$JAV_CONFIG" ./runelite-client/src/main/resources/jav_config.ws
@@ -46,11 +52,21 @@ variables:
     - ./gradlew :runelite-client-launcher:publishGitlab
 
 build:dev:
-  extends: 
+  extends:
     - .build
     - .only_dev
 
 publish:dev:
-  extends: 
+  extends:
     - .publish
     - .only_dev
+
+build:master:
+  extends:
+    - .build
+    - .only_master
+
+publish:master:
+  extends:
+    - .publish
+    - .only_master
