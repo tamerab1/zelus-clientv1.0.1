@@ -73,6 +73,10 @@ public class Launcher {
 			Properties properties = new Properties();
 			properties.load(Launcher.class.getResourceAsStream("/properties.ini"));
 			CLIENT_VERSION = properties.getProperty("client_version");
+			CLIENT_URL = "https://gitlab.com/api/v4/projects/66004513/packages/generic/client/" + CLIENT_VERSION
+					+ "/client.jar";
+			CLIENT_SHA_URL = "https://gitlab.com/api/v4/projects/66004513/packages/generic/client/" + CLIENT_VERSION
+					+ "/client.sha256";
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
