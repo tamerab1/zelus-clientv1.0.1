@@ -43,7 +43,7 @@ tasks.register("publishGitlab") {
 		var gitlab_host = "https://gitlab.com";
 		var file_path = "$rootDir/runelite-client-launcher/build/libs/runelite-client-launcher-all.jar";
 		var file_sha = fileSHA(file_path);
-		var file_version = "${ci_env}-latest"
+		var file_version = "${ci_env}-latest";
 
 		{
 			var file_url_path = "client-launcher/${file_version}/client-launcher.jar";
