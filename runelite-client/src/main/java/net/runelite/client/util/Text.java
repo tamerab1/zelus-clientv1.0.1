@@ -81,6 +81,9 @@ public class Text
 	 */
 	public static String removeTags(String str)
 	{
+		if (str == null) {
+			return null;
+		}
 		return TAG_REGEXP.matcher(str).replaceAll("");
 	}
 
