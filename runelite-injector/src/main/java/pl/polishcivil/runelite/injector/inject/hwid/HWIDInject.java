@@ -19,7 +19,7 @@ import pl.polishcivil.runelite.injector.Injector.ClassGroup;
 // TODO: hardcoded, update per rev
 public class HWIDInject {
 
-	private static String LAST_STR_FIELD_NAME = "cy";
+	private static String LAST_STR_FIELD_NAME = "ck";
 
 	public static void apply(ClassGroup group) throws Exception {
 		var hwidBytecode = getClassBytes(HWID.class);
@@ -38,6 +38,7 @@ public class HWIDInject {
 					instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "pl/polishcivil/runelite/injector/inject/hwid/HWID",
 							"hwid", "()Ljava/lang/String;"));
 					insList.insertBefore(fIns, instructions);
+					System.out.println("HWID injected " + platformNode.name);
 					break;
 				}
 			}
