@@ -23,6 +23,7 @@ public class Varp {
 			var v1 = v0.getNext();
 			if (v0.getOpcode() == Opcodes.NEWARRAY && v1 instanceof FieldInsnNode && v1.getOpcode() == Opcodes.PUTSTATIC) {
 				it.constant.operand = 30_000;
+				System.out.println("varps injected");
 			}
 		});
 	}

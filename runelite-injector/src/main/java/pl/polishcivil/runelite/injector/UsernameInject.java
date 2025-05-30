@@ -13,9 +13,9 @@ import pl.polishcivil.runelite.injector.Injector.ClassGroup;
 
 // TODO(polish) - do i really need it?
 public class UsernameInject {
-	private static final String USERNAME_OWNER = "wm";
-	private static final String USERNAME_CLEAN_NAME = "ay";
-	private static final String USERNAME_NAME = "ab";
+	private static final String USERNAME_OWNER = "wp";
+	private static final String USERNAME_CLEAN_NAME = "an";
+	private static final String USERNAME_NAME = "ao";
 	private static final String USERNAME_DESC = "Ljava/lang/String;";
 
 	static void apply(ClassGroup group) {
@@ -31,6 +31,7 @@ public class UsernameInject {
 					insList.add(removeTagsCall);
 					//insList.add(new FieldInsnNode(Opcodes.PUTFIELD, USERNAME_OWNER, USERNAME_CLEAN_NAME, "Ljava/lang/String;"));
 					instructions.insertBefore(ins, insList);
+					System.out.println("Username injected");
 				}
 			});
 		});
