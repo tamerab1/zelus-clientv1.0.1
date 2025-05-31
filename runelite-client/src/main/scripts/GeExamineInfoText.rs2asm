@@ -4,11 +4,9 @@
 ; component1 = parent of the info icon
 ; string0 = item examine
 ; string1 = Convenience fee text
-.id                 5730
-.int_stack_count    2
-.string_stack_count 2
-.int_var_count      6
-.string_var_count   3
+.id                       5730
+.int_arg_count            2
+.obj_arg_count            2
    sconst                 ""
    sstore                 2
    iconst                 0
@@ -23,7 +21,7 @@
    string_length         
    iconst                 0
    if_icmpgt              LABEL15
-   jump                   LABEL148
+   jump                   LABEL149
 LABEL15:
    iload                  0
    if_getwidth           
@@ -123,7 +121,7 @@ LABEL94:
    iconst                 1
    iload                  1
    if_sethide            
-   jump                   LABEL147
+   jump                   LABEL148
 LABEL98:
    iconst                 0
    iload                  1
@@ -132,6 +130,7 @@ LABEL98:
    cc_deleteall          
    iload                  1
    iconst                 5
+   iconst                 0
    iconst                 0
    cc_create             
    iconst                 15
@@ -174,9 +173,9 @@ LABEL98:
    sconst                 "Info"
    iload                  1
    if_setop              
-LABEL147:
-   jump                   LABEL169
 LABEL148:
+   jump                   LABEL170
+LABEL149:
    sload                  0
    sstore                 2
 
@@ -208,7 +207,7 @@ LABEL148:
    if_setonop            
    iload                  1
    if_clearops           
-LABEL169:
+LABEL170:
    sload                  2
    iload                  0
    if_settext            

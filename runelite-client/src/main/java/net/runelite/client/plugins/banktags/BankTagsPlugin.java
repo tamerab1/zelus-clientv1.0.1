@@ -42,7 +42,6 @@ import javax.inject.Named;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.InventoryID;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
@@ -50,7 +49,8 @@ import net.runelite.api.VarClientStr;
 import net.runelite.api.events.GrandExchangeSearched;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.ScriptCallbackEvent;
-import net.runelite.api.widgets.ComponentID;
+import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -230,7 +230,7 @@ public class BankTagsPlugin extends Plugin implements BankTagsService
 	private void reinitBank()
 	{
 		// call [clientscript,bankmain_init]
-		Widget w = client.getWidget(ComponentID.BANK_CONTAINER);
+		Widget w = client.getWidget(InterfaceID.Bankmain.UNIVERSE);
 		if (w != null)
 		{
 			client.createScriptEvent(w.getOnLoadListener())
@@ -403,10 +403,12 @@ public class BankTagsPlugin extends Plugin implements BankTagsService
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
-		if (event.getActionParam1() == ComponentID.BANK_ITEM_CONTAINER
-			&& event.getOption().equals("Examine"))
+		if (event.getActionParam1() == InterfaceID.Bankmain.ITEMS
+			&& (event.getOption().equals("Examine")
+			// Potion storage has no Examine
+			|| (event.getOption().equals("Withdraw-All-but-1") && !client.getItemContainer(InventoryID.BANK).contains(event.getItemId()))))
 		{
-			Widget container = client.getWidget(ComponentID.BANK_ITEM_CONTAINER);
+			Widget container = client.getWidget(InterfaceID.Bankmain.ITEMS);
 			Widget item = container.getChild(event.getActionParam0());
 			int itemId = item.getItemId();
 
@@ -422,7 +424,8 @@ public class BankTagsPlugin extends Plugin implements BankTagsService
 				text += " (" + tagCount + ")";
 			}
 
-			client.createMenuEntry(-1)
+			int index = event.getOption().equals("Examine") ? -1 : -2;
+			client.createMenuEntry(index)
 				.setParam0(event.getActionParam0())
 				.setParam1(event.getActionParam1())
 				.setTarget(event.getTarget())
