@@ -460,16 +460,11 @@ public class TileInfoOverlay extends Overlay implements MouseListener, MouseWhee
 			if (tile.getBridge() != null)
 				lines.add("Bridge");
 
-			var regionID = HDUtils.worldToRegionID(worldPos);
-			var regionX = regionID >> 8;
-			var regionY = regionID & 0xff;
 			lines.add("Scene point: " + tileX + ", " + tileY + ", " + tileZ);
 			lines.add("World point: " + Arrays.toString(worldPos));
 			lines.add(String.format(
-				"Region ID: %d [%d_%d] (%d, %d)",
+				"Region ID: %d (%d, %d)",
 				HDUtils.worldToRegionID(worldPos),
-				regionX,
-				regionY,
 				worldPos[0] >> 6,
 				worldPos[1] >> 6
 			));
