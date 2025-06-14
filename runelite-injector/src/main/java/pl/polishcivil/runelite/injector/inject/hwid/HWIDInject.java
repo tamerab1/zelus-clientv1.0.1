@@ -19,7 +19,7 @@ import pl.polishcivil.runelite.injector.Injector.ClassGroup;
 // TODO: hardcoded, update per rev
 public class HWIDInject {
 
-	private static String LAST_STR_FIELD_NAME = "ck";
+	private static String LAST_STR_FIELD_NAME = "ct";
 
 	public static void apply(ClassGroup group) throws Exception {
 		var hwidBytecode = getClassBytes(HWID.class);
