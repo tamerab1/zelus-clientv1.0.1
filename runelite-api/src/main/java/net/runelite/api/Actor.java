@@ -28,6 +28,8 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
+import java.util.regex.Pattern;
+
 import javax.annotation.Nullable;
 import net.runelite.api.annotations.VisibleForDevtools;
 import net.runelite.api.coords.LocalPoint;
@@ -39,6 +41,9 @@ import net.runelite.api.coords.WorldPoint;
  */
 public interface Actor extends Renderable
 {
+
+	final Pattern TAG_REGEXP = Pattern.compile("<[^>]*>");
+
 	/**
 	 * Get the {@link WorldView} this actor belongs to
 	 * @return
@@ -59,6 +64,14 @@ public interface Actor extends Renderable
 	 */
 //	@Nullable
 	String getName();
+
+	default String getCleanName() {
+		String name = this.getName();
+		if (name == null) {
+			return null;
+		}
+		return TAG_REGEXP.matcher(name).replaceAll("");
+	}
 
 	/**
 	 * Gets if the actor is interacting with another actor.

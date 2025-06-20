@@ -186,9 +186,9 @@ public class ImageCapture
 		}
 
 		File playerFolder;
-		if (client.getLocalPlayer() != null && client.getLocalPlayer().getName() != null)
+		if (client.getLocalPlayer() != null && client.getLocalPlayer().getCleanName() != null)
 		{
-			String playerDir = client.getLocalPlayer().getName();
+			String playerDir = client.getLocalPlayer().getCleanName();
 			RuneScapeProfileType profileType = RuneScapeProfileType.getCurrent(client);
 			if (profileType != RuneScapeProfileType.STANDARD)
 			{
