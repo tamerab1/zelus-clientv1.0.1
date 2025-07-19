@@ -23,8 +23,6 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.net.URL;
 
-import com.google.archivepatcher.applier.FileByFileV1DeltaApplier;
-
 import pl.polishcivil.runelite.injector.inject.hwid.HWIDInject;
 
 /**

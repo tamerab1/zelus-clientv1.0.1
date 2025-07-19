@@ -27,7 +27,6 @@
  */
 package net.runelite.client.rs;
 
-import com.google.archivepatcher.applier.FileByFileV1DeltaApplier;
 import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteStreams;
