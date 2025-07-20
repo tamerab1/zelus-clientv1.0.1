@@ -25,6 +25,7 @@
  */
 #version 330
 
+#include uniforms/global.glsl
 #include uniforms/materials.glsl
 #include uniforms/water_types.glsl
 #include uniforms/lights.glsl
@@ -34,41 +35,7 @@
 uniform sampler2DArray textureArray;
 uniform sampler2D shadowMap;
 
-uniform vec3 cameraPos;
-uniform float drawDistance;
-uniform int expandedMapLoadingChunks;
-uniform mat4 lightProjectionMatrix;
-uniform float elapsedTime;
-uniform float colorBlindnessIntensity;
-uniform int useFog;
-uniform float fogDepth;
-uniform vec3 fogColor;
-uniform vec3 waterColorLight;
-uniform vec3 waterColorMid;
-uniform vec3 waterColorDark;
-uniform vec3 ambientColor;
-uniform float ambientStrength;
-uniform vec3 lightColor;
-uniform float lightStrength;
-uniform vec3 underglowColor;
-uniform float underglowStrength;
-uniform float groundFogStart;
-uniform float groundFogEnd;
-uniform float groundFogOpacity;
-uniform float lightningBrightness;
-uniform vec3 lightDir;
-uniform float shadowMaxBias;
-uniform int shadowsEnabled;
-uniform bool underwaterEnvironment;
-uniform bool underwaterCaustics;
-uniform vec3 underwaterCausticsColor;
-uniform float underwaterCausticsStrength;
-
 // general HD settings
-uniform float saturation;
-uniform float contrast;
-
-uniform int pointLightsCount; // number of lights in current frame
 
 flat in ivec3 vHsl;
 flat in ivec3 vMaterialData;
@@ -114,9 +81,9 @@ void main() {
 
     // Water data
     bool isTerrain = (vTerrainData[0] & 1) != 0; // 1 = 0b1
-    int waterDepth1 = vTerrainData[0] >> 8 & 0x7FF;
-    int waterDepth2 = vTerrainData[1] >> 8 & 0x7FF;
-    int waterDepth3 = vTerrainData[2] >> 8 & 0x7FF;
+    int waterDepth1 = vTerrainData[0] >> 8 & 0xFFFF;
+    int waterDepth2 = vTerrainData[1] >> 8 & 0xFFFF;
+    int waterDepth3 = vTerrainData[2] >> 8 & 0xFFFF;
     float waterDepth =
         waterDepth1 * IN.texBlend.x +
         waterDepth2 * IN.texBlend.y +
@@ -209,21 +176,6 @@ void main() {
         vec4 baseColor1 = vec4(srgbToLinear(packedHslToSrgb(vHsl[0])), 1 - float(vHsl[0] >> 24 & 0xff) / 255.);
         vec4 baseColor2 = vec4(srgbToLinear(packedHslToSrgb(vHsl[1])), 1 - float(vHsl[1] >> 24 & 0xff) / 255.);
         vec4 baseColor3 = vec4(srgbToLinear(packedHslToSrgb(vHsl[2])), 1 - float(vHsl[2] >> 24 & 0xff) / 255.);
-
-        #if VANILLA_COLOR_BANDING
-        vec4 baseColor =
-            IN.texBlend[0] * baseColor1 +
-            IN.texBlend[1] * baseColor2 +
-            IN.texBlend[2] * baseColor3;
-
-        baseColor.rgb = linearToSrgb(baseColor.rgb);
-        baseColor.rgb = srgbToHsv(baseColor.rgb);
-        baseColor.b = floor(baseColor.b * 127) / 127;
-        baseColor.rgb = hsvToSrgb(baseColor.rgb);
-        baseColor.rgb = srgbToLinear(baseColor.rgb);
-
-        baseColor1 = baseColor2 = baseColor3 = baseColor;
-        #endif
 
         // get diffuse textures
         vec4 texColor1 = colorMap1 == -1 ? vec4(1) : texture(textureArray, vec3(uv1, colorMap1), mipBias);
@@ -451,6 +403,15 @@ void main() {
             getMaterialIsUnlit(material2),
             getMaterialIsUnlit(material3)
         ));
+
+        #if VANILLA_COLOR_BANDING
+            outputColor.rgb = linearToSrgb(outputColor.rgb);
+            outputColor.rgb = srgbToHsv(outputColor.rgb);
+            outputColor.b = floor(outputColor.b * 127) / 127;
+            outputColor.rgb = hsvToSrgb(outputColor.rgb);
+            outputColor.rgb = srgbToLinear(outputColor.rgb);
+        #endif
+
         outputColor.rgb *= mix(compositeLight, vec3(1), unlit);
         outputColor.rgb = linearToSrgb(outputColor.rgb);
 
@@ -466,7 +427,6 @@ void main() {
         // This is required if we always draw all underwater terrain.
         outputColor.a *= -256;
     }
-
 
     outputColor.rgb = clamp(outputColor.rgb, 0, 1);
 
@@ -516,6 +476,8 @@ void main() {
 
         outputColor.rgb = mix(outputColor.rgb, fogColor, combinedFog);
     }
+
+    outputColor.rgb = pow(outputColor.rgb, vec3(gammaCorrection));
 
     FragColor = outputColor;
 }

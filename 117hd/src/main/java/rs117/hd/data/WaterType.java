@@ -51,6 +51,15 @@ public enum WaterType
 		.causticsStrength(0)
 		.duration(1.2f)
 		.fishingSpotRecolor(hsl("#04730d"))),
+	MLM_WATER(b -> b
+		.specularStrength(.1f)
+		.specularGloss(100)
+		.normalStrength(.05f)
+		.baseOpacity(.8f)
+		.fresnelAmount(.3f)
+		.surfaceColor(rgb("#617093"))
+		.causticsStrength(0)
+		.duration(1.2f)),
 	SWAMP_WATER_FLAT(SWAMP_WATER, true),
 	POISON_WASTE(b -> b
 		.specularStrength(.1f)
@@ -147,6 +156,27 @@ public enum WaterType
 		.depthColor(rgb("#000000"))
 		.causticsStrength(0)
 		.flat(true)),
+	ARAXXOR_WASTE(b -> b
+		.specularStrength(.1f)
+		.specularGloss(100)
+		.normalStrength(.05f)
+		.baseOpacity(.9f)
+		.fresnelAmount(.3f)
+		.surfaceColor(srgb(22, 255, 13))
+		.foamColor(srgb(20, 255, 20))
+		.depthColor(srgb(30, 255, 26))
+		.causticsStrength(0)
+		.duration(1.6f)),
+	CAVE_WATER(b -> b
+		.specularStrength(.2f)
+		.specularGloss(100)
+		.normalStrength(.3f)
+		.baseOpacity(.75f)
+		.fresnelAmount(.1f)
+		.surfaceColor(rgb("#274049"))
+		.foamColor(rgb(10, 10, 10))
+		.depthColor(rgb("#3A6A70"))
+		.causticsStrength(0f)),
 	;
 
 	public final boolean flat;
