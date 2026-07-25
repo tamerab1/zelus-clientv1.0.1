@@ -62,21 +62,25 @@ public class Launcher {
 	static File CLIENT_FILE = new File(REASON_HOME, "betaclient.jar");
 	static File JRE_DIR = new File(REASON_HOME, "jre");
 
+	// Moved off the old GitLab project (gitlab.com/lexi7133049/client) --
+	// that account belongs to a previous developer, not Zelus, so it could
+	// never be republished from here going forward. GitHub Releases assets
+	// have a stable, predictable download URL per tag without needing any
+	// registry-specific API path, so CLIENT_VERSION doubles as the release
+	// tag name (e.g. "development-latest" for dev builds).
+	static final String CLIENT_REPO = "https://github.com/tamerab1/zelus-clientv1.0.1/releases/download/";
+
 	static String CLIENT_VERSION = "development-latest";
-	static String CLIENT_URL = "https://gitlab.com/api/v4/projects/66004513/packages/generic/client/" + CLIENT_VERSION
-			+ "/client.jar";
-	static String CLIENT_SHA_URL = "https://gitlab.com/api/v4/projects/66004513/packages/generic/client/" + CLIENT_VERSION
-			+ "/client.sha256";
+	static String CLIENT_URL = CLIENT_REPO + CLIENT_VERSION + "/client.jar";
+	static String CLIENT_SHA_URL = CLIENT_REPO + CLIENT_VERSION + "/client.sha256";
 
 	static {
 		try {
 			Properties properties = new Properties();
 			properties.load(Launcher.class.getResourceAsStream("/properties.ini"));
 			CLIENT_VERSION = properties.getProperty("client_version");
-			CLIENT_URL = "https://gitlab.com/api/v4/projects/66004513/packages/generic/client/" + CLIENT_VERSION
-					+ "/client.jar";
-			CLIENT_SHA_URL = "https://gitlab.com/api/v4/projects/66004513/packages/generic/client/" + CLIENT_VERSION
-					+ "/client.sha256";
+			CLIENT_URL = CLIENT_REPO + CLIENT_VERSION + "/client.jar";
+			CLIENT_SHA_URL = CLIENT_REPO + CLIENT_VERSION + "/client.sha256";
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
