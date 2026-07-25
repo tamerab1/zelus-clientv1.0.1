@@ -21,20 +21,23 @@ dependencies {
 }
 
 sourceSets.main.antlr.srcDirs = ["src/main/antlr4"]
-sourceSets.main.java.srcDirs += ["generated-src/main/java"]
 
+// Was also manually adding "generated-src/main/java" as an extra Java
+// source dir and copying the antlr plugin's own output into it (guarded
+// by onlyIf-if-that-dir-doesn't-exist-yet, as a hand-rolled up-to-date
+// check). The antlr plugin already generates into build/generated-src/
+// antlr/main and adds THAT to the main source set automatically -- the
+// manual copy just duplicated the same generated classes into a second
+// source dir that's also on the compile path, so every class defined by
+// the grammar (rs2asmParser, rs2asmLexer, etc.) got compiled twice
+// ("duplicate class"). Only silent locally because generated-src/ is
+// gitignored, so a dev machine with one lying around from a prior build
+// would skip the whole task via onlyIf; a clean checkout (CI, or anyone
+// cloning fresh) never has it, so the guard never trips and the
+// duplication always happened.
 generateGrammarSource {
     maxHeapSize = "64m"
   	arguments = ["-package", "net.runelite.cache.script.assembler"]
-    doLast {
-        copy {
-            from "${buildDir}/generated-src/antlr/main"
-            into "generated-src/main/java"
-        }
-    }
-    onlyIf {
-        !file("generated-src/main/java").exists()
-    }
 }
 
 configurations {
