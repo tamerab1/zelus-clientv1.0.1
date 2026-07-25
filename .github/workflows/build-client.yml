@@ -113,6 +113,7 @@ jobs:
             --win-shortcut `
             --win-menu `
             --win-dir-chooser `
+            --win-per-user-install `
             --dest dist
 
       - name: Rename installer to match download page
