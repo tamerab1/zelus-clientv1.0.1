@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import net.runelite.api.*;
 import rs117.hd.HdPlugin;
 import rs117.hd.config.SeasonalTheme;
@@ -1079,6 +1080,7 @@ public enum Material {
 	public final Function<HdPlugin, Boolean> replacementCondition;
 
 	@Setter
+	@Accessors(chain = true)
 	private static class Builder {
 		private Material parent;
 		private Material normalMap;

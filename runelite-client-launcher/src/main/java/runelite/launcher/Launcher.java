@@ -58,7 +58,7 @@ import javax.imageio.ImageIO;
 import javax.swing.GrayFilter;
 
 public class Launcher {
-	static File REASON_HOME = new File(System.getProperty("user.home"), ".reason");
+	static File REASON_HOME = new File(System.getProperty("user.home"), ".zelus");
 	static File CLIENT_FILE = new File(REASON_HOME, "betaclient.jar");
 	static File JRE_DIR = new File(REASON_HOME, "jre");
 
@@ -82,7 +82,24 @@ public class Launcher {
 		}
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
+		try {
+			run(args);
+		} catch (Throwable t) {
+			LauncherLog.error("Launcher failed to start", t);
+			SplashScreen.stop();
+			javax.swing.JOptionPane.showMessageDialog(null,
+					"Zelus failed to start.\n\n" + t.getClass().getSimpleName()
+							+ (t.getMessage() != null ? (": " + t.getMessage()) : "")
+							+ "\n\nA log file has been saved to:\n" + LauncherLog.logFile().getAbsolutePath()
+							+ "\n\nPlease share this file if you need help.",
+					"Zelus Launcher - Error",
+					javax.swing.JOptionPane.ERROR_MESSAGE);
+			System.exit(1);
+		}
+	}
+
+	private static void run(String[] args) throws Exception {
 		if (!REASON_HOME.exists()) {
 			if (!REASON_HOME.mkdirs()) {
 				throw new RuntimeException("Unable to create home directory at " + REASON_HOME.getAbsolutePath());
@@ -95,12 +112,27 @@ public class Launcher {
 			}
 		}
 
+		LauncherLog.init(REASON_HOME);
+		LauncherLog.info("Launcher starting, os=" + OsCheck.getOperatingSystemType());
+
 		Properties properties = new Properties();
 		properties.load(Launcher.class.getResourceAsStream("/properties.ini"));
 
 		SplashScreen.init();
 
 		SplashScreen.stage(0.0, "Loading...", "Checking system.");
+
+		// Auto-repair: an extracted JRE can end up corrupt/partial (interrupted
+		// extraction, disk error, a stray file left over from a bad previous
+		// run) while still passing the bare "does java.exe exist" check below.
+		// Verify it actually runs before trusting it, same as a manual
+		// "repair" step would, but automatic so players never have to find a
+		// button to click.
+		if (new File(getJavaExe()).exists() && !verifyJre()) {
+			LauncherLog.info("Existing JRE failed verification, re-downloading");
+			deleteRecursive(JRE_DIR);
+			JRE_DIR.mkdirs();
+		}
 
 		if (!new File(getJavaExe()).exists()) {
 			syncFile(jreFilePacked(), javaDownloadLink(), javaDownloadLinkSha256(),
@@ -111,6 +143,10 @@ public class Launcher {
 						SplashScreen.stage(0, 1, "Loading...", "Downloading jre.", (int) d, (int) t, true);
 					});
 			unpackJRE();
+			if (!verifyJre()) {
+				throw new RuntimeException("Downloaded JRE does not run correctly (java -version failed) at "
+						+ getJavaExe());
+			}
 		}
 
 		syncFile(CLIENT_FILE,
@@ -134,6 +170,97 @@ public class Launcher {
 				"-jar", CLIENT_FILE.getAbsolutePath());
 		builder.inheritIO();
 		builder.start();
+		LauncherLog.info("Client process started");
+	}
+
+	/**
+	 * Runs "{@code javaExe} -version" and checks it exits successfully, to
+	 * catch a corrupted/partial JRE extraction that would otherwise only
+	 * surface as a confusing failure later when actually launching the
+	 * client (or not surface as a launcher-visible error at all, if the
+	 * client process itself is what fails to start).
+	 */
+	static boolean verifyJre() {
+		try {
+			ProcessBuilder pb = new ProcessBuilder(getJavaExe(), "-version");
+			pb.redirectErrorStream(true);
+			Process p = pb.start();
+			byte[] ignored = p.getInputStream().readAllBytes();
+			boolean finished = p.waitFor(10, java.util.concurrent.TimeUnit.SECONDS);
+			return finished && p.exitValue() == 0;
+		} catch (Exception e) {
+			LauncherLog.error("JRE verification failed", e);
+			return false;
+		}
+	}
+
+	static void deleteRecursive(File file) {
+		File[] children = file.listFiles();
+		if (children != null) {
+			for (File child : children) {
+				deleteRecursive(child);
+			}
+		}
+		file.delete();
+	}
+
+	/**
+	 * Minimal file logger for the launcher's own bootstrap process (JRE/client
+	 * sync, extraction, process start) — separate from the actual game
+	 * client's own logback-based logging under .zelus/.runelite/logs/.
+	 * Previously any launcher-level failure just printed a stack trace to
+	 * stdout, which is invisible if the player launched by double-clicking
+	 * (no console attached) — they'd just see nothing happen, with no way to
+	 * report what went wrong.
+	 */
+	static final class LauncherLog {
+		private static java.io.PrintWriter writer;
+		private static File file;
+
+		static void init(File homeDir) {
+			try {
+				File logsDir = new File(homeDir, "logs");
+				logsDir.mkdirs();
+				String timestamp = new java.text.SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new java.util.Date());
+				file = new File(logsDir, "launcher-" + timestamp + ".log");
+				writer = new java.io.PrintWriter(new java.io.FileWriter(file, true), true);
+			} catch (Exception e) {
+				// Logging to a file is a nice-to-have, not something that should
+				// prevent the launcher from starting if it fails (e.g. disk full,
+				// permissions) — fall back to stdout-only silently.
+				e.printStackTrace();
+			}
+		}
+
+		static File logFile() {
+			return file;
+		}
+
+		static void info(String message) {
+			String line = timestamp() + " INFO  " + message;
+			System.out.println(line);
+			if (writer != null) {
+				writer.println(line);
+			}
+		}
+
+		static void error(String message, Throwable t) {
+			String line = timestamp() + " ERROR " + message;
+			System.err.println(line);
+			if (t != null) {
+				t.printStackTrace();
+			}
+			if (writer != null) {
+				writer.println(line);
+				if (t != null) {
+					t.printStackTrace(writer);
+				}
+			}
+		}
+
+		private static String timestamp() {
+			return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date());
+		}
 	}
 
 	static void syncFile(File local, String remoteURL, String remoteURLSha256, ProgressListener update,
@@ -154,8 +281,7 @@ public class Launcher {
 				extractZip(jreFilePacked(), JRE_DIR);
 				break;
 			case Linux:
-				extractTarGZ(jreFilePacked(), JRE_DIR);
-				break;
+			case MacOS:
 			case MacOSARM:
 				extractTarGZ(jreFilePacked(), JRE_DIR);
 				break;
@@ -288,7 +414,7 @@ public class Launcher {
 			case Windows:
 				return new File(REASON_HOME, "jre.zip");
 			case Linux:
-				return new File(REASON_HOME, "jre.tar.gz");
+			case MacOS:
 			case MacOSARM:
 				return new File(REASON_HOME, "jre.tar.gz");
 			default:
@@ -302,6 +428,8 @@ public class Launcher {
 				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_windows_hotspot_21.0.5_11.zip";
 			case Linux:
 				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_linux_hotspot_21.0.5_11.tar.gz";
+			case MacOS:
+				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_mac_hotspot_21.0.5_11.tar.gz";
 			case MacOSARM:
 				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_aarch64_mac_hotspot_21.0.5_11.tar.gz";
 			default:
@@ -315,8 +443,16 @@ public class Launcher {
 				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_windows_hotspot_21.0.5_11.zip.sha256.txt";
 			case Linux:
 				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_linux_hotspot_21.0.5_11.tar.gz.sha256.txt";
+			case MacOS:
+				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_x64_mac_hotspot_21.0.5_11.tar.gz.sha256.txt";
 			case MacOSARM:
-				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_aarch64_mac_hotspot_21.0.5_11.pkg.sha256.txt";
+				// NOTE: pre-existing bug found while fixing Intel Mac support — this
+				// pointed at a .pkg.sha256.txt while javaDownloadLink() above downloads
+				// a .tar.gz for this same case. A .pkg's checksum will never match a
+				// .tar.gz's contents, so syncFile() would treat every launch as "needs
+				// re-download" (functional, just wastes bandwidth/time every launch,
+				// never actually breaks). Matched to the actual downloaded artifact.
+				return "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_aarch64_mac_hotspot_21.0.5_11.tar.gz.sha256.txt";
 			default:
 				throw new RuntimeException();
 		}
@@ -328,6 +464,7 @@ public class Launcher {
 				return new File(new File(JRE_DIR, "bin"), "java.exe").getAbsolutePath();
 			case Linux:
 				return new File(new File(JRE_DIR, "bin"), "java").getAbsolutePath();
+			case MacOS:
 			case MacOSARM:
 				return new File(new File(JRE_DIR, "Contents/Home/bin"), "java").getAbsolutePath();
 			default:

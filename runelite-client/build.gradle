@@ -83,6 +83,7 @@ project.ext.gitCommit = localGitCommit
 apply plugin: BootstrapPlugin
 
 tasks.register("RuneLite.main()", JavaExec.class) {
+	group = "application"
 	classpath = project.sourceSets.main.runtimeClasspath
 	workingDir = rootDir
   mainClass = "net.runelite.client.RuneLite"

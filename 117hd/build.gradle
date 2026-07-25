@@ -1,25 +1,32 @@
 plugins {
-	id 'java'
+    id 'buildlogic.java-conventions'
 }
 
-repositories {
-	mavenLocal()
-	maven {
-		url = 'https://repo.runelite.net'
-	}
-	mavenCentral()
+description = '117 HD Plugin'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
-	compileOnly project(":client")
-	annotationProcessor libs.org.projectlombok.lombok
-	compileOnly libs.org.projectlombok.lombok
-}
-
-group = 'rs117.hd'
-version = '1.3.3'
-sourceCompatibility = '11'
-
-tasks.withType(JavaCompile).configureEach {
-	options.encoding = 'UTF-8'
+    api project(':runelite-api')
+    api project(':client')
+    compileOnly libs.org.projectlombok.lombok
+    annotationProcessor libs.org.projectlombok.lombok
+    compileOnly libs.com.google.code.findbugs.jsr305
+    compileOnly libs.org.jetbrains.annotations
+    api libs.com.google.code.gson.gson
+    api libs.com.google.inject.guice
+    api libs.org.lwjgl.lwjgl
+    api libs.org.lwjgl.lwjgl.opengl
+    api libs.org.lwjgl.lwjgl.opencl
+    runtimeOnly libs.org.lwjgl.lwjgl
+        runtimeOnly(variantOf(libs.org.lwjgl.lwjgl) { classifier("natives-windows") })
+        runtimeOnly(variantOf(libs.org.lwjgl.lwjgl) { classifier("natives-windows-x86") })
+        runtimeOnly(variantOf(libs.org.lwjgl.lwjgl) { classifier("natives-windows-arm64") })
+    runtimeOnly libs.org.lwjgl.lwjgl.opengl
+        runtimeOnly(variantOf(libs.org.lwjgl.lwjgl.opengl) { classifier("natives-windows") })
+        runtimeOnly(variantOf(libs.org.lwjgl.lwjgl.opengl) { classifier("natives-windows-x86") })
+        runtimeOnly(variantOf(libs.org.lwjgl.lwjgl.opengl) { classifier("natives-windows-arm64") })
 }

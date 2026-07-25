@@ -278,7 +278,7 @@ public interface ChatColorConfig extends Config
 		position = 23,
 		keyName = "opaqueServerMessage",
 		name = "Server message",
-		description = "Color of server messages (eg. 'Welcome to RuneScape').",
+		description = "Color of server messages (eg. 'Welcome to Zelus').",
 		section = opaqueSection
 	)
 	Color opaqueServerMessage();
@@ -675,7 +675,7 @@ public interface ChatColorConfig extends Config
 		position = 73,
 		keyName = "transparentServerMessage",
 		name = "Server message (transparent)",
-		description = "Color of server messages (eg. 'Welcome to RuneScape') (transparent).",
+		description = "Color of server messages (eg. 'Welcome to Zelus') (transparent).",
 		section = transparentSection
 	)
 	Color transparentServerMessage();

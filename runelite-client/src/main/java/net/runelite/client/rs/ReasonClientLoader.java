@@ -113,7 +113,7 @@ public class ReasonClientLoader implements Supplier<Client> {
 		try {
 			SplashScreen.stage(.40, null, "Loading client");
 
-			File oprsInjected = new File(System.getProperty("user.home") + "/.reason/.runelite/cache/injected-client.jar");
+			File oprsInjected = new File(System.getProperty("user.home") + "/.zelus/.runelite/cache/injected-client.jar");
 
 			writeInjectedClient(oprsInjected);
 
@@ -125,7 +125,7 @@ public class ReasonClientLoader implements Supplier<Client> {
 			var config = downloadConfig();
 			var classLoader = createJarClassLoader(jarFile);
 
-			SplashScreen.stage(.465, "Starting", "Starting Old School RuneScape");
+			SplashScreen.stage(.465, "Starting", "Starting Zelus");
 			rs = loadClient(config, classLoader);
 			SplashScreen.stage(.5, null, "Starting core classes");
 		} catch (Exception e) {

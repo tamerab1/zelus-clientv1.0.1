@@ -71,7 +71,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class ChatHistoryPlugin extends Plugin implements KeyListener
 {
-	private static final String WELCOME_MESSAGE = "Welcome to Old School RuneScape";
+	private static final String WELCOME_MESSAGE = "Welcome to Zelus";
 	private static final String CLEAR_HISTORY = "Clear history";
 	private static final String COPY_TO_CLIPBOARD = "Copy to clipboard";
 	private static final String REPORT = "Report";

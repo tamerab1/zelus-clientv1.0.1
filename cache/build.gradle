@@ -21,6 +21,7 @@ dependencies {
 }
 
 sourceSets.main.antlr.srcDirs = ["src/main/antlr4"]
+sourceSets.main.java.srcDirs += ["generated-src/main/java"]
 
 generateGrammarSource {
     maxHeapSize = "64m"
@@ -30,6 +31,9 @@ generateGrammarSource {
             from "${buildDir}/generated-src/antlr/main"
             into "generated-src/main/java"
         }
+    }
+    onlyIf {
+        !file("generated-src/main/java").exists()
     }
 }
 

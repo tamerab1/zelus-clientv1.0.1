@@ -36,6 +36,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Consumer;
@@ -47,7 +48,9 @@ import net.runelite.api.Client;
 import net.runelite.api.Constants;
 import net.runelite.api.GameState;
 import net.runelite.api.SpritePixels;
+import net.runelite.api.widgets.Widget;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.WidgetLoaded;
 import net.runelite.client.RuneLite;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -58,6 +61,7 @@ import net.runelite.client.input.KeyListener;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.OSType;
 import okhttp3.Call;
@@ -98,14 +102,28 @@ public class LoginScreenPlugin extends Plugin implements KeyListener
 	@Named("runelite.static.base")
 	private HttpUrl staticBase;
 
+	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
+	private LoginLogoOverlay logoOverlay;
+
 	private String usernameCache;
+
+	private static final int LOGO_SPRITE_ID = 498;
+	private static final int LOGIN_INTERFACE = 378;
+	private static final int LOGIN_LOGO_CHILD = 78;
 
 	@Override
 	protected void startUp() throws Exception
 	{
 		applyUsername();
 		keyManager.registerKeyListener(this);
-		clientThread.invoke(this::overrideLoginScreen);
+		overlayManager.add(logoOverlay);
+		clientThread.invoke(() ->
+		{
+			overrideLoginScreen();
+		});
 	}
 
 	@Override
@@ -117,11 +135,56 @@ public class LoginScreenPlugin extends Plugin implements KeyListener
 		}
 
 		keyManager.unregisterKeyListener(this);
+		overlayManager.remove(logoOverlay);
 		clientThread.invoke(() ->
 		{
 			restoreLoginScreen();
 			client.setShouldRenderLoginScreenFire(true);
 		});
+	}
+
+	private void overrideLogo()
+	{
+		// Replace the logo with a fully transparent 1x1 image so the background shows cleanly
+		BufferedImage blank = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+		SpritePixels pixels = ImageUtil.getImageSpritePixels(blank, client);
+		client.getSpriteOverrides().put(LOGO_SPRITE_ID, pixels);
+	}
+
+	/**
+	 * Walk the game client's fields via reflection and null out any SpritePixels field
+	 * that is NOT our background sprite. This clears the logo field which has no public API.
+	 */
+	private void clearLogoFields(SpritePixels background)
+	{
+		Class<?> spriteClass = background.getClass();
+		// Walk up the class hierarchy of the game client to find SpritePixels fields
+		Class<?> cls = client.getClass();
+		while (cls != null)
+		{
+			for (Field field : cls.getDeclaredFields())
+			{
+				try
+				{
+					if (spriteClass.isAssignableFrom(field.getType()) || field.getType() == SpritePixels.class)
+					{
+						field.setAccessible(true);
+						Object val = field.get(client);
+						// Null out any SpritePixels field that is NOT our background
+						if (val != null && val != background)
+						{
+							field.set(client, null);
+							log.debug("Cleared login screen sprite field: {}", field.getName());
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					// ignore inaccessible or incompatible fields
+				}
+			}
+			cls = cls.getSuperclass();
+		}
 	}
 
 	@Provides
@@ -167,6 +230,19 @@ public class LoginScreenPlugin extends Plugin implements KeyListener
 
 			log.debug("Saving username: {}", username);
 			config.username(username);
+		}
+	}
+
+	@Subscribe
+	public void onWidgetLoaded(WidgetLoaded event)
+	{
+		if (event.getGroupId() == LOGIN_INTERFACE)
+		{
+			Widget logo = client.getWidget(LOGIN_INTERFACE, LOGIN_LOGO_CHILD);
+			if (logo != null)
+			{
+				logo.setHidden(true);
+			}
 		}
 	}
 
@@ -272,7 +348,26 @@ public class LoginScreenPlugin extends Plugin implements KeyListener
 
 	private void overrideLoginScreen()
 	{
-		client.setShouldRenderLoginScreenFire(config.showLoginFire());
+		client.setShouldRenderLoginScreenFire(false);
+
+		// Always use the bundled server background
+		try
+		{
+			BufferedImage image;
+			synchronized (ImageIO.class)
+			{
+				image = ImageIO.read(LoginScreenPlugin.class.getResourceAsStream("login_background.png"));
+			}
+			SpritePixels pixels = ImageUtil.getImageSpritePixels(image, client);
+			client.setLoginScreen(pixels);
+			logoOverlay.setBackground(image);
+			clearLogoFields(pixels);
+			return;
+		}
+		catch (Exception e)
+		{
+			log.error("error loading bundled login background", e);
+		}
 
 		LoginScreenOverride loginScreen = config.loginScreen();
 		if (loginScreen == LoginScreenOverride.OFF)
