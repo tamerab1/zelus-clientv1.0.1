@@ -39,7 +39,9 @@ jobs:
 
       # development-latest is a rolling tag, not a versioned release -- delete
       # and recreate each time so `gh release create` doesn't fail on an
-      # already-existing tag/assets from the previous build.
+      # already-existing tag/assets from the previous build. The
+      # build-windows-installer job below uploads its own asset onto this
+      # same release afterwards (needs: build), so it must exist by then.
       - name: Publish development-latest release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -51,3 +53,72 @@ jobs:
             --title "Development Latest" \
             --notes "Automated dev build from commit ${{ github.sha }}" \
             --prerelease
+
+      - name: Upload launcher jar for Windows packaging
+        uses: actions/upload-artifact@v4
+        with:
+          name: launcher-jar
+          path: release/zelus-launcher.jar
+
+  # jpackage can't cross-compile a Windows installer from Linux -- this has
+  # to run on an actual Windows machine. Downloads the launcher jar the
+  # `build` job already produced rather than rebuilding the whole Gradle
+  # project a second time; only needs the one jar plus the icon resource.
+  build-windows-installer:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            runelite-client-launcher/src/main/resources/zelus_icon.ico
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: launcher-jar
+          path: input
+
+      # GitHub-hosted windows-latest runners have Chocolatey preinstalled;
+      # jpackage's --type exe needs WiX 3's candle.exe/light.exe on PATH.
+      - name: Install WiX Toolset
+        run: choco install wixtoolset -y --no-progress
+
+      # Don't hardcode the version-numbered install dir (e.g. "v3.14") --
+      # the chocolatey package version drifts over time and would silently
+      # break this path. Find wherever candle.exe actually landed instead.
+      - name: Add WiX to PATH
+        run: |
+          $wixBin = Split-Path (Get-ChildItem -Path "C:\Program Files (x86)\WiX Toolset*\bin\candle.exe" | Select-Object -First 1).FullName
+          Write-Output "Found WiX at: $wixBin"
+          echo $wixBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build Windows installer
+        run: |
+          jpackage `
+            --type exe `
+            --name ZelusLauncher `
+            --input input `
+            --main-jar zelus-launcher.jar `
+            --main-class runelite.launcher.Launcher `
+            --icon runelite-client-launcher\src\main\resources\zelus_icon.ico `
+            --app-version 1.0.0 `
+            --vendor Zelus `
+            --description "Zelus RSPS Launcher" `
+            --win-shortcut `
+            --win-menu `
+            --win-dir-chooser `
+            --dest dist
+
+      - name: Rename installer to match download page
+        run: Copy-Item "dist\ZelusLauncher-1.0.0.exe" "dist\ZelusLauncher-windows.exe"
+
+      - name: Upload installer onto the development-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload development-latest dist\ZelusLauncher-windows.exe --clobber --repo "${{ github.repository }}"
