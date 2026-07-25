@@ -112,6 +112,7 @@ jobs:
             --description "Zelus RSPS Launcher" `
             --win-shortcut `
             --win-menu `
+            --win-menu-group "Zelus" `
             --win-dir-chooser `
             --win-per-user-install `
             --dest dist
