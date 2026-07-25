@@ -11,7 +11,12 @@ import pl.polishcivil.runelite.injector.Injector.ClassGroup;
  * Host
  */
 public class RSA {
-	private static String RSA = "981d7e7e92f6676be104d3f7ff1b11e8f654534512f4d7b94ba6c5b7cfeffabf0eb2798e9b5437da5a50b73413491a8b47d5d3a091709d7aafba2caf0ba66760a54f654801ed2e3fcafaafb25db7cce7b96f30cc213555689026b523b1d1a27aa6d5ab4cbe1b1e7fe5c3b7b93006060c334db3c8aa2c5a85f83f3dd50b6a2ff9";
+	// Must be the hex form of the SAME modulus as the game server's
+	// RSA_MODULUS (server.properties, decimal there). Was a leftover value
+	// from the codebase this was forked from -- didn't match the Zelus
+	// server's actual generated keypair, so every login block the client
+	// encrypted failed server-side decryption ("Invalid RSA check '0'").
+	private static String RSA = "d43d76061837561686b5387f9c3f6d290f5cc96ab71834728f8652cea050e68d7f50992377d5a6dddc098d8fd82c0513e391791c7a7e163a81be0e04764ec9e1ea7662b9fa0bd2c5b678ed9cc5cf42d03869d83af59961e6918d77d42b4ad5f166a3dc42f68b1e9dab94692084f8df5eb9f5ef8679824eedaa533172e61c705d";
 
 	static void apply(ClassGroup group) {
 		group.nodes.values().stream().flatMap(cls -> {

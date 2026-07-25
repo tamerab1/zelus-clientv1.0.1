@@ -1,6 +1,6 @@
 title=Old School RuneScape
 adverturl=http://www.runescape.com/g=oldscape/bare_advert.ws
-codebase=http://127.0.0.1/
+codebase=http://beta.zelusrsps.com/
 cachedir=oldschool
 storebase=0
 initial_jar=gamepack_6140455.jar
@@ -55,7 +55,7 @@ param=9=ElZAIrq5NpKN6D3mDdihco3oPeYN2KFy2DCquj7JMmECPmLrDP3Bnw
 param=15=0
 param=10=5
 param=8=true
-param=17=http://localhost:9292/worlds.ws
+param=17=http://beta.zelusrsps.com:9292/worlds.ws
 param=2=https://payments.jagex.com/operator/v1/
 param=18=
 param=4=45569
