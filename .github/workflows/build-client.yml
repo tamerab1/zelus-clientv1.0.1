@@ -37,6 +37,27 @@ jobs:
           cd release
           sha256sum client.jar > client.sha256
 
+      # No-launcher option for players who'd rather not install anything --
+      # a double-clickable wrapper next to client.jar instead of making
+      # people run a raw jar (which, depending on file associations, can
+      # just open in an archive tool like WinRAR instead of doing anything,
+      # confusing for anyone who doesn't know to invoke it via `java -jar`
+      # from a terminal). Zipped (not loose files) so the script and jar
+      # can't end up separated in different folders after download, and so
+      # the .command file's execute bit survives the download intact --
+      # GitHub release assets don't preserve permissions on loose files,
+      # but a zip's internal permissions come through fine on extract.
+      - name: Bundle no-launcher zips
+        run: |
+          mkdir -p release/win-bundle release/mac-bundle
+          cp release/client.jar release/win-bundle/
+          cp dist-scripts/run-client.bat release/win-bundle/
+          cp release/client.jar release/mac-bundle/
+          cp dist-scripts/run-client.command release/mac-bundle/
+          chmod +x release/mac-bundle/run-client.command
+          (cd release/win-bundle && zip -r ../zelus-client-windows.zip .)
+          (cd release/mac-bundle && zip -r ../zelus-client-mac.zip .)
+
       # development-latest is a rolling tag, not a versioned release -- delete
       # and recreate each time so `gh release create` doesn't fail on an
       # already-existing tag/assets from the previous build. The
@@ -49,6 +70,7 @@ jobs:
           gh release delete development-latest --yes --cleanup-tag --repo "${{ github.repository }}" || true
           gh release create development-latest \
             release/client.jar release/client.sha256 release/zelus-launcher.jar \
+            release/zelus-client-windows.zip release/zelus-client-mac.zip \
             --repo "${{ github.repository }}" \
             --title "Development Latest" \
             --notes "Automated dev build from commit ${{ github.sha }}" \
