@@ -98,6 +98,22 @@ jobs:
           Write-Output "Found WiX at: $wixBin"
           echo $wixBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+      # --win-upgrade-uuid MUST stay this exact, fixed value forever -- it's
+      # WiX's UpgradeCode, the thing that tells Windows Installer "this new
+      # MSI is a newer version of that same product, please replace it" on
+      # install. Without it, jpackage derives ProductCode/UpgradeCode from
+      # --name + --app-version, so two builds sharing a version (as every
+      # build did before this fix, all hardcoded to 1.0.0) get IDENTICAL
+      # ids and Windows Installer rejects the second one outright with
+      # error 1638 ("another version of this product is already
+      # installed") instead of upgrading -- confirmed live 2026-08-10: a
+      # July 25 test install silently blocked every subsequent install,
+      # including the player-facing one, with no visible error to the
+      # user (the installer just appeared to do nothing). --app-version is
+      # now unique per build (github.run_number) specifically so this
+      # UUID's upgrade detection has something to compare against; a
+      # stable UUID with a version that never changes would hit the exact
+      # same 1638 bug.
       - name: Build Windows installer
         run: |
           jpackage `
@@ -107,7 +123,8 @@ jobs:
             --main-jar zelus-launcher.jar `
             --main-class runelite.launcher.Launcher `
             --icon runelite-client-launcher\src\main\resources\zelus_icon.ico `
-            --app-version 1.0.0 `
+            --app-version "1.0.${{ github.run_number }}" `
+            --win-upgrade-uuid B2871B0F-6CBC-4306-BF19-4361861C6554 `
             --vendor Zelus `
             --description "Zelus RSPS Launcher" `
             --win-shortcut `
@@ -117,8 +134,12 @@ jobs:
             --win-per-user-install `
             --dest dist
 
+      # Filename varies with --app-version now (e.g. ZelusLauncher-1.0.42.exe)
+      # -- find whatever jpackage actually produced instead of hardcoding it.
       - name: Rename installer to match download page
-        run: Copy-Item "dist\ZelusLauncher-1.0.0.exe" "dist\ZelusLauncher-windows.exe"
+        run: |
+          $built = Get-ChildItem -Path "dist" -Filter "ZelusLauncher-*.exe" | Select-Object -First 1
+          Copy-Item $built.FullName "dist\ZelusLauncher-windows.exe"
 
       - name: Upload installer onto the development-latest release
         env:
