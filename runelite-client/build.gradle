@@ -92,7 +92,7 @@ tasks.register("RuneLite.main()", JavaExec.class) {
 
 jar {
  manifest {
-  attributes("Main-Class": "net.runelite.client.RuneLite")
+  attributes("Main-Class": "net.runelite.client.Bootstrap")
  }
 }
 
