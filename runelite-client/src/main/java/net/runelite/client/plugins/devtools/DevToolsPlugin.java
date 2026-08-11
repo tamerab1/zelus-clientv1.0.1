@@ -317,21 +317,21 @@ public class DevToolsPlugin extends Plugin
 		Toolkit.getDefaultToolkit().removeAWTEventListener(swingInspectorKeyListener);
 	}
 
-	// Owner's PlayerGroup entry sets clientImgId=82 (see kronos-server's
-	// PlayerGroup.java), which the server bakes into the decorated local
-	// player name as "<img=82>". developerMode is hardcoded true for every
-	// player in RuneLite.java (the real "-developer-mode" launch-flag check
-	// is commented out there), so without this check every player -- not
-	// just staff -- gets this panel and its client-side stat/appearance
-	// spoofing commands.
+	// Owner's crown is sent through the native OSRS chat-rank protocol field
+	// (J_MOD), not embedded in the player's name text -- that only ever
+	// carries donator/YouTuber/PvP-mode icons (see Player#getNameWithRanks()
+	// server-side). So the server instead sets a dedicated varp (id 29999,
+	// see kronos-server's VarPlayerRepository#OWNER_CLIENT_FLAG) to 1 on
+	// login when player.isOwner() is true. developerMode is hardcoded true
+	// for every player in RuneLite.java (the real "-developer-mode"
+	// launch-flag check is commented out there), so without this check
+	// every player -- not just staff -- gets this panel and its client-side
+	// stat/appearance spoofing commands.
+	private static final int OWNER_CLIENT_FLAG_VARP = 29999;
+
 	private boolean isOwner()
 	{
-		if (client == null || client.getLocalPlayer() == null)
-		{
-			return false;
-		}
-		String name = client.getLocalPlayer().getName();
-		return name != null && name.contains("<img=82>");
+		return client != null && client.getVarpValue(OWNER_CLIENT_FLAG_VARP) == 1;
 	}
 
 	@Subscribe
@@ -339,15 +339,32 @@ public class DevToolsPlugin extends Plugin
 	{
 		if (event.getGameState() == net.runelite.api.GameState.LOGGED_IN)
 		{
-			clientToolbar.removeNavigation(navButton);
-			if (isOwner())
-			{
-				clientToolbar.addNavigation(navButton);
-			}
+			refreshNavButton();
 		}
 		else if (event.getGameState() == net.runelite.api.GameState.LOGIN_SCREEN)
 		{
 			clientToolbar.removeNavigation(navButton);
+		}
+	}
+
+	// The server sets OWNER_CLIENT_FLAG_VARP as part of the same login handshake
+	// that fires GameStateChanged(LOGGED_IN) -- ordering between the two isn't
+	// guaranteed, so re-check here too rather than relying on login state alone.
+	@Subscribe
+	public void onVarbitChanged(VarbitChanged event)
+	{
+		if (event.getVarpId() == OWNER_CLIENT_FLAG_VARP)
+		{
+			refreshNavButton();
+		}
+	}
+
+	private void refreshNavButton()
+	{
+		clientToolbar.removeNavigation(navButton);
+		if (isOwner())
+		{
+			clientToolbar.addNavigation(navButton);
 		}
 	}
 
