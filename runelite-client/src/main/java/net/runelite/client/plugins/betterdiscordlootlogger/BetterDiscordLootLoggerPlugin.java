@@ -379,7 +379,10 @@ public class BetterDiscordLootLoggerPlugin extends Plugin
 				break;
 		}
 
-		String screenshotString = "**" + client.getLocalPlayer().getName() + "**";
+		// Plain login username, not the in-game display name -- the latter can carry
+		// server-applied rank/title icon and colour tags (e.g. "<img=97>") baked in,
+		// which isn't something Discord can render and showed up as literal text.
+		String screenshotString = "**" + client.getUsername() + "**";
 		//TODO: Get value of item for raid drops too
 		// - Easy for TOB as it's in the chat
 		// - COX might have to use map of item names and ids and grab price from the wiki
