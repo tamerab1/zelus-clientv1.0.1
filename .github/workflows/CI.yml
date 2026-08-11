@@ -1,6 +1,12 @@
 name: CI
 
-on: [ push, pull_request ]
+# Leftover from before the GitLab -> GitHub migration -- ./ci/build.sh no
+# longer exists in this repo, so this failed on every push regardless of
+# what changed. build-client.yml (triggered on push to main) is the real
+# build/release pipeline now. Kept but disabled rather than deleted, same
+# pattern as the monorepo's retired deploy-development job.
+on:
+  workflow_dispatch:
 
 jobs:
   build:
