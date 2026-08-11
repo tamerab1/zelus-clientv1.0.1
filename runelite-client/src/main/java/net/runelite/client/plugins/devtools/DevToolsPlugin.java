@@ -294,7 +294,8 @@ public class DevToolsPlugin extends Plugin
 			.panel(panel)
 			.build();
 
-		clientToolbar.addNavigation(navButton);
+		// Not added here -- onGameStateChanged() adds/removes it once the local
+		// player's rank is actually known (owner-only, see isOwner() above).
 
 		eventBus.register(soundEffectOverlay);
 
@@ -316,9 +317,48 @@ public class DevToolsPlugin extends Plugin
 		Toolkit.getDefaultToolkit().removeAWTEventListener(swingInspectorKeyListener);
 	}
 
+	// Owner's PlayerGroup entry sets clientImgId=82 (see kronos-server's
+	// PlayerGroup.java), which the server bakes into the decorated local
+	// player name as "<img=82>". developerMode is hardcoded true for every
+	// player in RuneLite.java (the real "-developer-mode" launch-flag check
+	// is commented out there), so without this check every player -- not
+	// just staff -- gets this panel and its client-side stat/appearance
+	// spoofing commands.
+	private boolean isOwner()
+	{
+		if (client == null || client.getLocalPlayer() == null)
+		{
+			return false;
+		}
+		String name = client.getLocalPlayer().getName();
+		return name != null && name.contains("<img=82>");
+	}
+
+	@Subscribe
+	public void onGameStateChanged(net.runelite.api.events.GameStateChanged event)
+	{
+		if (event.getGameState() == net.runelite.api.GameState.LOGGED_IN)
+		{
+			clientToolbar.removeNavigation(navButton);
+			if (isOwner())
+			{
+				clientToolbar.addNavigation(navButton);
+			}
+		}
+		else if (event.getGameState() == net.runelite.api.GameState.LOGIN_SCREEN)
+		{
+			clientToolbar.removeNavigation(navButton);
+		}
+	}
+
 	@Subscribe
 	public void onCommandExecuted(CommandExecuted commandExecuted)
 	{
+		if (!isOwner())
+		{
+			return;
+		}
+
 		String[] args = commandExecuted.getArguments();
 
 		switch (commandExecuted.getCommand().toLowerCase())
