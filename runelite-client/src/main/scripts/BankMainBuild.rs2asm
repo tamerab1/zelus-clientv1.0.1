@@ -841,7 +841,7 @@ LABEL750:
 LABEL753:
    jump                   LABEL757
 LABEL754:
-   sconst                 "The Bank of Gielinor"
+   sconst                 "The Bank of Zelus"
    iload                  5
    if_settext            
 LABEL757:
@@ -1053,7 +1053,7 @@ LABEL896:
    iload                  36                     ; overriding single tab building mode?
    iconst                 1                      ;
    if_icmpne              tabtitle               ; set normal "Tab" title
-   sconst                 "The Bank of Gielinor" ; bank title
+   sconst                 "The Bank of Zelus" ; bank title
    iload                  5                      ; bank title component
    if_settext                                    ;
    jump                   FinishBuilding         ;
