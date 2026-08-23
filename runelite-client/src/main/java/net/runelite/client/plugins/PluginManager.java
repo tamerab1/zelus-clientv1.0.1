@@ -486,6 +486,38 @@ public class PluginManager
 			throw new PluginInstantiationException(ex);
 		}
 
+		// 117HD and the base GPU renderer are mutually exclusive (117HD declares GPU as a
+		// conflict, so enabling 117HD already auto-disables GPU via the conflict handling in
+		// startPlugin/setPluginEnabled above) -- but turning 117HD back off left players with
+		// NO renderer active at all unless they remembered to manually re-enable GPU. Unlike
+		// other conflict pairs (which are just "can't both be on", with no implied fallback),
+		// exactly one of these two should always be running, so restore GPU specifically here
+		// rather than generalizing this to every conflict declaration.
+		if ("117 HD".equals(plugin.getClass().getAnnotation(PluginDescriptor.class).name()))
+		{
+			plugins.stream()
+				.filter(p -> "GPU".equals(p.getClass().getAnnotation(PluginDescriptor.class).name()))
+				.findFirst()
+				.ifPresent(gpu ->
+				{
+					if (!isPluginEnabled(gpu))
+					{
+						setPluginEnabled(gpu, true);
+					}
+					if (!activePlugins.contains(gpu))
+					{
+						try
+						{
+							startPlugin(gpu);
+						}
+						catch (PluginInstantiationException ex)
+						{
+							log.warn("Error auto-starting GPU plugin after 117HD was disabled", ex);
+						}
+					}
+				});
+		}
+
 		return true;
 	}
 
