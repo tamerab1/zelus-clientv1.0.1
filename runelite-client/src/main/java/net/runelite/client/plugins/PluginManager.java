@@ -99,6 +99,7 @@ public class PluginManager
 	private final Provider<GameEventManager> sceneTileManager;
 	private final List<Plugin> plugins = new CopyOnWriteArrayList<>();
 	private final List<Plugin> activePlugins = new CopyOnWriteArrayList<>();
+	private final Set<Plugin> startingPlugins = new HashSet<>();
 
 	@Inject
 	@VisibleForTesting
@@ -411,51 +412,63 @@ public class PluginManager
 		// plugins always start in the EDT
 		assert SwingUtilities.isEventDispatchThread();
 
-		if (activePlugins.contains(plugin) || !isPluginEnabled(plugin))
+		// startingPlugins guards against a plugin being re-entered while its own startUp() is
+		// still in progress further down the call stack -- e.g. a conflict-resolution stopPlugin()
+		// call triggering another plugin's stopPlugin() side effects, which then tries to start
+		// this same plugin back up before the original call has finished. Without this, the
+		// plugin's startUp() (and native resource init, e.g. GPU's GL context) can run twice.
+		if (activePlugins.contains(plugin) || !isPluginEnabled(plugin) || !startingPlugins.add(plugin))
 		{
 			return false;
 		}
 
-		List<Plugin> conflicts = conflictsForPlugin(plugin);
-		for (Plugin conflict : conflicts)
-		{
-			if (isPluginEnabled(conflict))
-			{
-				setPluginEnabled(conflict, false);
-			}
-			if (activePlugins.contains(conflict))
-			{
-				stopPlugin(conflict);
-			}
-		}
-
-		activePlugins.add(plugin);
-
 		try
 		{
-			plugin.startUp();
-
-			log.debug("Plugin {} is now running", plugin.getClass().getSimpleName());
-			if (sceneTileManager != null)
+			List<Plugin> conflicts = conflictsForPlugin(plugin);
+			for (Plugin conflict : conflicts)
 			{
-				final GameEventManager gameEventManager = this.sceneTileManager.get();
-				if (gameEventManager != null)
+				if (isPluginEnabled(conflict))
 				{
-					gameEventManager.simulateGameEvents(plugin);
+					setPluginEnabled(conflict, false);
+				}
+				if (activePlugins.contains(conflict))
+				{
+					stopPlugin(conflict);
 				}
 			}
 
-			eventBus.register(plugin);
-			schedule(plugin);
-			eventBus.post(new PluginChanged(plugin, true));
+			activePlugins.add(plugin);
+
+			try
+			{
+				plugin.startUp();
+
+				log.debug("Plugin {} is now running", plugin.getClass().getSimpleName());
+				if (sceneTileManager != null)
+				{
+					final GameEventManager gameEventManager = this.sceneTileManager.get();
+					if (gameEventManager != null)
+					{
+						gameEventManager.simulateGameEvents(plugin);
+					}
+				}
+
+				eventBus.register(plugin);
+				schedule(plugin);
+				eventBus.post(new PluginChanged(plugin, true));
+			}
+			catch (ThreadDeath e)
+			{
+				throw e;
+			}
+			catch (Throwable ex)
+			{
+				throw new PluginInstantiationException(ex);
+			}
 		}
-		catch (ThreadDeath e)
+		finally
 		{
-			throw e;
-		}
-		catch (Throwable ex)
-		{
-			throw new PluginInstantiationException(ex);
+			startingPlugins.remove(plugin);
 		}
 
 		return true;
