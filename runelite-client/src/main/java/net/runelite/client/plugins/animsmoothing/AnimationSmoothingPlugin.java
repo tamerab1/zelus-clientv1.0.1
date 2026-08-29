@@ -34,7 +34,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 	name = "Animation Smoothing",
 	description = "Show smoother player, NPC, and object animations",
 	tags = {"npcs", "objects", "players"},
-	enabledByDefault = false
+	enabledByDefault = true
 )
 public class AnimationSmoothingPlugin extends Plugin
 {
