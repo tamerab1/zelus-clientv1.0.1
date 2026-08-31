@@ -95,7 +95,7 @@ public interface BetterDiscordLootLoggerConfig extends Config
     )
     default int valuableDropThreshold()
     {
-        return 1_000_000;
+        return 50_000_000;
     }
 
     @ConfigItem(
