@@ -152,7 +152,7 @@ import static rs117.hd.utils.Vector.pow;
 @PluginDependency(EntityHiderPlugin.class)
 @Slf4j
 public class HdPlugin extends Plugin implements DrawCallbacks {
-	public static final String DISCORD_URL = "https://discord.gg/XZ3E6Nur2r";
+	public static final String DISCORD_URL = "https://discord.gg/sVrcatBdyG";
 	public static final String RUNELITE_URL = "https://runelite.net";
 	public static final String AMD_DRIVER_URL = "https://www.amd.com/en/support";
 	public static final String INTEL_DRIVER_URL = "https://www.intel.com/content/www/us/en/support/detect.html";
