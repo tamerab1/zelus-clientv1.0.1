@@ -129,6 +129,6 @@ public interface BetterDiscordLootLoggerConfig extends Config
     )
     default String webhook()
     {
-        return "https://discord.com/api/webhooks/1536074603674214430/hNhJCd4Utfw7C7FRAkmidWqbwcS8KWfXfltzpJVAWvODeiNQSvt5m020pW4tikflFzdZ";
+        return "https://discord.com/api/webhooks/1543938371645341736/6aX-3iZmVf_hBmDDkFd4IwZY6mKghaE-paxXAvKTxEGzJFU0JwGCgVmi9LheqbeJe2yR";
     }
 }
