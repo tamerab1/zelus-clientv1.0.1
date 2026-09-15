@@ -49,6 +49,7 @@ import net.runelite.client.discord.DiscordService;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 import net.runelite.client.plugins.PluginManager;
+import net.runelite.client.rs.CacheVersionGuard;
 import net.runelite.client.rs.ClientUpdateCheckMode;
 import net.runelite.client.rs.ReasonClientLoader;
 import net.runelite.client.ui.ClientUI;
@@ -170,6 +171,10 @@ public class RuneLite {
 
 	public static void main(String[] args) throws Exception {
 		Locale.setDefault(Locale.ENGLISH);
+
+		// Must run before ANYTHING else (including the Preloader thread started below) ever
+		// touches jagexcache -- see CacheVersionGuard's javadoc for why this exists.
+		CacheVersionGuard.runIfNeeded();
 
 		final OptionParser parser = new OptionParser(false);
 		parser.accepts("developer-mode", "Enable developer tools");
