@@ -111,6 +111,15 @@ tasks.register("generateInjectedData", JavaExec.class) {
 	classpath = project(":runelite-injector").sourceSets.main.runtimeClasspath
 	workingDir = rootDir
   mainClass = "pl.polishcivil.runelite.injector.Injector"
+	// Forwards -Dzelus.local=true (if the caller passed it to gradle) into this forked JVM,
+	// so RSA.java can pick the local-dev keypair. Unset by default -- always builds the
+	// production-targeting client unless explicitly opted in.
+	if (System.getProperty("zelus.local") != null) {
+		systemProperty "zelus.local", System.getProperty("zelus.local")
+	}
+	// Declared as an input so Gradle reruns this (rather than reusing a stale cached
+	// runelite-injected.bin from the other mode) whenever this flag changes between builds.
+	inputs.property("zelusLocal", System.getProperty("zelus.local", "false"))
 }
 
 tasks.withType(BootstrapTask) {

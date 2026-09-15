@@ -43,8 +43,11 @@ public class ReasonClientConfigLoader {
 
 		final RSConfig config = new RSConfig();
 
-
-		InputStreamReader localReader = new InputStreamReader(getClass().getResourceAsStream("/jav_config.ws"));
+		// Opt-in only (-Dzelus.local=true) -- never affects a normal launch. Points at the
+		// permanent zelus.test/127.0.0.1 hosts entry instead of the real zelusrsps.com domains,
+		// so local testing never again requires editing hosts for the production domain.
+		String resourceName = Boolean.getBoolean("zelus.local") ? "/jav_config_local.ws" : "/jav_config.ws";
+		InputStreamReader localReader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
 		InputStreamReader reader = localReader;
 
 		String str;
