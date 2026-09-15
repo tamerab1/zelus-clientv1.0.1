@@ -74,6 +74,9 @@ public class Launcher {
 	static String CLIENT_URL = CLIENT_REPO + CLIENT_VERSION + "/client.jar";
 	static String CLIENT_SHA_URL = CLIENT_REPO + CLIENT_VERSION + "/client.sha256";
 
+	// See launchClientWithAutoRecovery's javadoc.
+	private static final long EARLY_CRASH_WINDOW_MS = 90_000;
+
 	static {
 		try {
 			Properties properties = new Properties();
@@ -166,6 +169,25 @@ public class Launcher {
 		SplashScreen.stage(0.0, "Loading...", "Launching client");
 		SplashScreen.stop();
 
+		launchClientWithAutoRecovery(true);
+	}
+
+	/**
+	 * A player closing the client while its post-update cache download is still in progress (or
+	 * any other rare cause of the same class of early crash) leaves jagexcache in a genuinely
+	 * broken half-written state -- CacheVersionGuard (in the client itself) only wipes ONCE per
+	 * cache revision, by design, so it won't fire again to clean up this kind of damage on the
+	 * next launch. Rather than tell players to go delete an AppData folder themselves, the
+	 * launcher -- which starts the client as a genuinely separate, independently monitorable OS
+	 * process (unlike the client's own internal cache-sync logic, which lives in the original,
+	 * unmodifiable obfuscated game engine) -- watches for the client dying abnormally shortly
+	 * after starting, and if that happens, wipes jagexcache and retries automatically, once,
+	 * before ever surfacing anything to the player.
+	 * <p>
+	 * {@code allowRetry} is false on the recursive retry call so a second consecutive early crash
+	 * (meaning the wipe didn't actually fix it) surfaces normally instead of looping forever.
+	 */
+	private static void launchClientWithAutoRecovery(boolean allowRetry) throws Exception {
 		ProcessBuilder builder = new ProcessBuilder(
 				getJavaExe(),
 				"-Xmx768m",
@@ -173,8 +195,26 @@ public class Launcher {
 				"--add-opens=java.base/java.lang=ALL-UNNAMED",
 				"-jar", CLIENT_FILE.getAbsolutePath());
 		builder.inheritIO();
-		builder.start();
-		LauncherLog.info("Client process started");
+
+		long startedAt = System.currentTimeMillis();
+		Process process = builder.start();
+		LauncherLog.info("Client process started" + (allowRetry ? "" : " (auto-recovery retry)"));
+
+		int exitCode = process.waitFor();
+		long ranForMs = System.currentTimeMillis() - startedAt;
+
+		// A normal play session -- however it ends (logout, closed window, force-quit) -- runs for
+		// well over this window; only an early, fast exit even plausibly indicates a startup-time
+		// crash rather than the player just finishing a real session.
+		boolean looksLikeStartupCrash = exitCode != 0 && ranForMs < EARLY_CRASH_WINDOW_MS;
+
+		if (looksLikeStartupCrash && allowRetry) {
+			LauncherLog.info("Client exited abnormally " + ranForMs
+					+ "ms after starting (exit code " + exitCode + ") -- wiping jagexcache and retrying once");
+			File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+			deleteRecursive(jagexCache);
+			launchClientWithAutoRecovery(false);
+		}
 	}
 
 	/**
