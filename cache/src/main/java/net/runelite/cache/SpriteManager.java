@@ -61,7 +61,28 @@ public class SpriteManager implements SpriteProvider
 
 		for (Archive a : index.getArchives())
 		{
-			byte[] contents = a.decompress(storage.loadArchive(a));
+			byte[] raw;
+			try
+			{
+				raw = storage.loadArchive(a);
+			}
+			catch (Exception e)
+			{
+				continue;
+			}
+			if (raw == null)
+			{
+				// A handful of sprite archives in this cache have no backing storage data
+				// (pre-existing gap, unrelated to any particular tool run) -- skip rather than
+				// crash the whole load for every other consumer of this manager.
+				continue;
+			}
+
+			byte[] contents = a.decompress(raw);
+			if (contents == null)
+			{
+				continue;
+			}
 
 			SpriteLoader loader = new SpriteLoader();
 			SpriteDefinition[] defs = loader.load(a.getArchiveId(), contents);

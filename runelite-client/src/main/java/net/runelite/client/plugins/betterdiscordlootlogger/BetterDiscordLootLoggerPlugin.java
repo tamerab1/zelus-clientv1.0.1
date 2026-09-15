@@ -411,13 +411,18 @@ public class BetterDiscordLootLoggerPlugin extends Plugin
 		}
 
 		ArrayList<String> urls = new ArrayList<>(Arrays.asList(configUrl.split("\\s*,\\s*")));
-		MultipartBody.Builder requestBodyBuilder = new MultipartBody.Builder()
-				.setType(MultipartBody.FORM)
-				.addFormDataPart("payload_json", GSON.toJson(discordWebhookBody));
+		String payloadJson = GSON.toJson(discordWebhookBody);
 
+		// Each URL needs its own MultipartBody.Builder: the builder is mutable and
+		// addFormDataPart() accumulates onto it, so sharing one instance across multiple URLs
+		// caused every URL after the first to pick up extra/duplicate "file" parts left over
+		// from the earlier URLs' screenshot callbacks.
 		for (String url : urls) {
 			HttpUrl httpUrl = HttpUrl.parse(url);
 			if (httpUrl != null) {
+				MultipartBody.Builder requestBodyBuilder = new MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+						.addFormDataPart("payload_json", payloadJson);
 				if (config.sendScreenshot()) {
 					sendWebhookWithScreenshot(httpUrl, requestBodyBuilder);
 				} else {

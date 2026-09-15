@@ -1514,8 +1514,17 @@ public class HdPlugin extends Plugin implements DrawCallbacks {
 				uboCompute.windOffset.set(windOffset);
 
 				if (configCharacterDisplacement) {
-					// The local player needs to be added first for distance culling
-					Model playerModel = localPlayer.getModel();
+					// The local player needs to be added first for distance culling.
+					// getModel() can throw instead of returning null when one of the player's
+					// composited sub-models (e.g. a just-equipped custom item) hasn't finished
+					// its async JS5 download/cache-write yet -- treat that exactly like the
+					// already-intended playerModel == null case below: skip this frame, retry
+					// next frame once the model is actually cached.
+					Model playerModel = null;
+					try {
+						playerModel = localPlayer.getModel();
+					} catch (Exception ignored) {
+					}
 					if (playerModel != null)
 						uboCompute.addCharacterPosition(lp.getX(), lp.getY(), playerModel.getXYZMag()); // XZ radius
 				}
