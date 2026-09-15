@@ -49,6 +49,9 @@ import net.runelite.client.discord.DiscordService;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 import net.runelite.client.plugins.PluginManager;
+import net.runelite.api.GameState;
+import net.runelite.api.events.GameStateChanged;
+import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.rs.CacheVersionGuard;
 import net.runelite.client.rs.ClientUpdateCheckMode;
 import net.runelite.client.rs.ReasonClientLoader;
@@ -175,6 +178,9 @@ public class RuneLite {
 		// Must run before ANYTHING else (including the Preloader thread started below) ever
 		// touches jagexcache -- see CacheVersionGuard's javadoc for why this exists.
 		CacheVersionGuard.runIfNeeded();
+		// Separate, always-on safety net for a crash/interrupted-download on a previous launch --
+		// see beginSession()'s javadoc. Paired with the markSessionSafe() call in start() below.
+		CacheVersionGuard.beginSession();
 
 		final OptionParser parser = new OptionParser(false);
 		parser.accepts("developer-mode", "Enable developer tools");
@@ -294,6 +300,20 @@ public class RuneLite {
 	}
 
 	public void start() throws Exception {
+		// Marks this session "safe" the first time the client reaches the login screen -- proof
+		// the risky JS5 cache-sync phase succeeded -- clearing CacheVersionGuard's crash marker.
+		// Registered up front, before applet.init()/applet.start() below kick off the actual
+		// engine, so the transition can't be missed. Unregisters itself after firing once.
+		eventBus.register(new Object() {
+			@Subscribe
+			public void onGameStateChanged(GameStateChanged event) {
+				if (event.getGameState().getState() >= GameState.LOGIN_SCREEN.getState()) {
+					CacheVersionGuard.markSessionSafe();
+					eventBus.unregister(this);
+				}
+			}
+		});
+
 		// Load RuneLite or Vanilla client
 		final boolean isOutdated = client == null;
 

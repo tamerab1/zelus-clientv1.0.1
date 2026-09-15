@@ -34,6 +34,15 @@ public final class CacheVersionGuard
 {
 	private static final String CACHE_REVISION = "v1.1.89";
 
+	// See beginSession()/markSessionSafe()'s javadocs -- a SEPARATE, always-on safety net
+	// (independent of CACHE_REVISION) for a player closing the client mid-download, or any other
+	// early crash, rather than the launcher's own supervisor process: unlike the launcher (a
+	// separate executable already installed on every player's machine, with no self-update
+	// mechanism of its own), this class ships inside client.jar itself, which every existing
+	// installed launcher already re-downloads automatically on every launch -- so a fix placed
+	// here reaches every player immediately, with no new launcher download required.
+	private static final File SESSION_MARKER = new File(RuneLite.RUNELITE_DIR, "session_active");
+
 	private CacheVersionGuard()
 	{
 	}
@@ -69,6 +78,59 @@ public final class CacheVersionGuard
 			// hits the same error_game_js5crc this exists to prevent, no worse off than before.
 			log.warn("Failed to apply cache revision wipe for {}", CACHE_REVISION, e);
 		}
+	}
+
+	/**
+	 * Detects "the previous launch on this machine never got past its risky startup phase" --
+	 * regardless of CACHE_REVISION -- and wipes jagexcache if so, before writing a fresh marker for
+	 * THIS launch. Call once, at the very top of RuneLite.main(), right alongside runIfNeeded().
+	 * <p>
+	 * How: a marker file is written here at the START of every launch, and only removed by
+	 * {@link #markSessionSafe()} once the client actually reaches the login screen (proof the JS5
+	 * sync succeeded -- a crash during that sync, by definition, never gets this far). If that
+	 * marker is STILL present when this method runs, the only way that's possible is that the
+	 * previous launch started, wrote it, and then died before ever reaching the login screen --
+	 * exactly the class of failure a player closing the client mid-download produces, and exactly
+	 * the class runIfNeeded()'s one-shot-per-revision wipe can't help with a second time. This
+	 * check doesn't need to know WHY the previous run died (its crash may not even be catchable --
+	 * the actual JS5 engine is unmodified, obfuscated third-party code, not this fork's own), only
+	 * THAT it did, which this marker proves independently of any specific error message.
+	 */
+	public static void beginSession()
+	{
+		try
+		{
+			if (SESSION_MARKER.exists())
+			{
+				log.info("Previous session never reached the login screen -- wiping local jagexcache "
+						+ "in case it was left mid-download or otherwise corrupt");
+				File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+				if (jagexCache.exists())
+				{
+					deleteRecursively(jagexCache);
+				}
+				deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea"));
+				deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea.json"));
+			}
+
+			SESSION_MARKER.getParentFile().mkdirs();
+			Files.write(SESSION_MARKER.toPath(), new byte[0]);
+		}
+		catch (IOException e)
+		{
+			log.warn("Failed to run session-crash check", e);
+		}
+	}
+
+	/**
+	 * Marks this session as having gotten safely past its risky startup phase -- see
+	 * {@link #beginSession()}. Call once, the first time the client reaches
+	 * {@link net.runelite.api.GameState#LOGIN_SCREEN} (or later); see the subscriber registered in
+	 * RuneLite.start().
+	 */
+	public static void markSessionSafe()
+	{
+		deleteIfExists(SESSION_MARKER);
 	}
 
 	private static void deleteIfExists(File file)
