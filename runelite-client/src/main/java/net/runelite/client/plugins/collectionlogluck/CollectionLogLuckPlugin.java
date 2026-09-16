@@ -46,7 +46,8 @@ import java.util.regex.Pattern;
 @PluginDescriptor(
 	name = "Collection Log Luck",
 	description = "Calculates and displays luck for Zelus collection log items.",
-	tags = {"collection", "log", "luck"}
+	tags = {"collection", "log", "luck"},
+	enabledByDefault = false
 )
 public class CollectionLogLuckPlugin extends Plugin
 {
