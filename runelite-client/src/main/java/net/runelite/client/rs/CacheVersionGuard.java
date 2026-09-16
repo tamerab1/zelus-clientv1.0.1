@@ -133,6 +133,44 @@ public final class CacheVersionGuard
 		deleteIfExists(SESSION_MARKER);
 	}
 
+	/**
+	 * 2026-09-16 follow-up: {@link #beginSession()} only catches a crash that happens BEFORE
+	 * {@link #markSessionSafe()} fires at the login screen. JS5 keeps streaming new
+	 * regions/models/textures for the entire play session, not just during initial login -- so a
+	 * crash (or a black-screen freeze the player has to force-close) that happens well INTO an
+	 * already-logged-in session leaves a marker that was already cleared long ago, and the next
+	 * launch has no way to know the cache might now be inconsistent. That gap is exactly what
+	 * produced a same-session "was playing fine -> black screen -> force closed -> relaunched ->
+	 * error_game_js5crc" report.
+	 * <p>
+	 * Fix: don't wait for a heuristic on the NEXT launch at all. The moment THIS launch's engine
+	 * actually reports a js5crc error (see the call in RSAppletStub), wipe the local cache
+	 * synchronously, right then, before the error dialog even opens. The very next relaunch --
+	 * whether the player does it themselves or an auto-recovery layer does it -- starts from a
+	 * guaranteed-clean cache, deterministically, regardless of when in the session the crash
+	 * happened or what caused it. This makes {@link #beginSession()}'s marker-based detection a
+	 * backstop for crash classes that never reach this dialog at all (a hard JVM/native crash with
+	 * no error dialog), not the primary defense for js5crc anymore.
+	 */
+	public static void wipeCacheNow(String reason)
+	{
+		try
+		{
+			log.info("Wiping local jagexcache immediately due to: {}", reason);
+			File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+			if (jagexCache.exists())
+			{
+				deleteRecursively(jagexCache);
+			}
+			deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea"));
+			deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea.json"));
+		}
+		catch (IOException e)
+		{
+			log.warn("Failed to wipe cache for {}", reason, e);
+		}
+	}
+
 	private static void deleteIfExists(File file)
 	{
 		if (file.exists() && !file.delete())

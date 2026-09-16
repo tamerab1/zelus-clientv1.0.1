@@ -161,6 +161,22 @@ class RSAppletStub implements AppletStub
 								.addHelpButtons()
 								.open());
 					}
+					else if (code.equals("error_game_js5crc"))
+					{
+						// Self-heals on the spot, regardless of whether this fired during initial
+						// login or well into an already-connected session -- see
+						// CacheVersionGuard.wipeCacheNow()'s javadoc. Runs synchronously, before the
+						// dialog even opens, so the fix is already in place by the time the player
+						// reads the message.
+						CacheVersionGuard.wipeCacheNow("error_game_js5crc");
+						SwingUtilities.invokeLater(() ->
+							new FatalErrorDialog("OldSchool RuneScape hit a cache sync error. This has already been fixed " +
+								"automatically -- your local cache was just cleared. Simply relaunch the game and it will " +
+								"download fresh data on its own; no further action is needed.")
+								.setTitle("RuneLite", "OldSchool RuneScape has crashed")
+								.addHelpButtons()
+								.open());
+					}
 					else
 					{
 						SwingUtilities.invokeLater(() ->
