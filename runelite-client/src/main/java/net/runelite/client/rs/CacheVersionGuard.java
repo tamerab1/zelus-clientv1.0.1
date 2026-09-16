@@ -43,12 +43,23 @@ public final class CacheVersionGuard
 	// here reaches every player immediately, with no new launcher download required.
 	private static final File SESSION_MARKER = new File(RuneLite.RUNELITE_DIR, "session_active");
 
+	// See wipeCacheNow()/applyPendingWipe()'s javadocs -- 2026-09-16 follow-up #2: a same-process
+	// delete attempted from inside a still-running, already-crashing JVM can fail on Windows because
+	// that same process's own (unmodified, obfuscated) JS5 engine can still hold
+	// main_file_cache.dat2 open on a file handle. This marker makes the wipe durable regardless: it
+	// is a plain new file that is never locked by anything, so writing it always succeeds, and
+	// applyPendingWipe() (called at the very top of runIfNeeded(), before this NEW process has
+	// opened a single cache file) finishes the job with zero lock contention.
+	private static final File WIPE_PENDING_MARKER = new File(RuneLite.RUNELITE_DIR, "force_wipe_pending");
+
 	private CacheVersionGuard()
 	{
 	}
 
 	public static void runIfNeeded()
 	{
+		applyPendingWipe();
+
 		File marker = new File(RuneLite.RUNELITE_DIR, "cache_" + CACHE_REVISION + "_wiped");
 		if (marker.exists())
 		{
@@ -154,9 +165,28 @@ public final class CacheVersionGuard
 	 */
 	public static void wipeCacheNow(String reason)
 	{
+		// Durable half first: a plain new file, never locked by anything, so this always succeeds.
+		// Guarantees the wipe happens on the NEXT launch even if the immediate attempt below can't
+		// finish right now. See this field's javadoc for why the immediate attempt alone can't be
+		// trusted on Windows.
 		try
 		{
-			log.info("Wiping local jagexcache immediately due to: {}", reason);
+			WIPE_PENDING_MARKER.getParentFile().mkdirs();
+			Files.write(WIPE_PENDING_MARKER.toPath(), reason.getBytes(StandardCharsets.UTF_8));
+		}
+		catch (IOException e)
+		{
+			log.warn("Failed to write pending-wipe marker for {}", reason, e);
+		}
+
+		// Best-effort immediate attempt: if this session's own JS5 engine has already released its
+		// file handles by this point, the player gets a clean cache right away with no need to
+		// relaunch at all. If a file is still locked, deleteRecursively throws partway through --
+		// that's fine, whatever it already deleted stays deleted, and applyPendingWipe() finishes
+		// the rest on the next launch once nothing holds those files open anymore.
+		try
+		{
+			log.info("Attempting immediate jagexcache wipe due to: {}", reason);
 			File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
 			if (jagexCache.exists())
 			{
@@ -164,10 +194,48 @@ public final class CacheVersionGuard
 			}
 			deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea"));
 			deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea.json"));
+			// Fully succeeded already -- no need to make the next launch redo this.
+			deleteIfExists(WIPE_PENDING_MARKER);
 		}
 		catch (IOException e)
 		{
-			log.warn("Failed to wipe cache for {}", reason, e);
+			log.info("Immediate wipe for {} couldn't finish (likely a cache file this session's own "
+				+ "JS5 engine still has open) -- already queued to finish automatically on the next "
+				+ "launch instead", reason);
+		}
+	}
+
+	/**
+	 * Finishes a wipe {@link #wipeCacheNow(String)} couldn't complete immediately. Must run before
+	 * ANYTHING else (including {@link #runIfNeeded()}'s own check, which calls this first) ever
+	 * touches jagexcache in this process -- by construction this is always a brand-new JVM that has
+	 * not opened a single cache file yet, so unlike the crashing process that left this marker
+	 * behind, there is no file lock to fight here.
+	 */
+	private static void applyPendingWipe()
+	{
+		if (!WIPE_PENDING_MARKER.exists())
+		{
+			return;
+		}
+
+		try
+		{
+			log.info("Applying cache wipe requested by a previous crashed session");
+			File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+			if (jagexCache.exists())
+			{
+				deleteRecursively(jagexCache);
+			}
+			deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea"));
+			deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea.json"));
+			deleteIfExists(WIPE_PENDING_MARKER);
+		}
+		catch (IOException e)
+		{
+			// Leave the marker in place -- worst case this retries again on the launch after this
+			// one, never worse than before.
+			log.warn("Failed to apply pending cache wipe -- will retry on next launch", e);
 		}
 	}
 
