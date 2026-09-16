@@ -311,6 +311,17 @@ public class ItemManager
 
 		int price = 0;
 
+		// This server's custom items reuse numeric ids that can collide with real, unrelated
+		// OSRS items in the wiki/Jagex price map below (keyed purely by id, with no awareness
+		// this is a private server) -- an untradeable custom item can end up showing a real
+		// item's price (e.g. a custom "Sunstone crystal" displaying ~1.2m from whatever real
+		// item happens to share its id). Untradeable items have no GE price in real OSRS either,
+		// so skipping the lookup entirely for them is correct behavior, not a special case.
+		if (!itemComposition.isTradeable())
+		{
+			return 0;
+		}
+
 		final Collection<ItemMapping> mappedItems = ItemMapping.map(itemID);
 
 		if (mappedItems == null)
