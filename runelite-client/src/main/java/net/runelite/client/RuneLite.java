@@ -82,8 +82,11 @@ import javax.net.ssl.X509TrustManager;
 import javax.swing.*;
 import java.applet.Applet;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.lang.management.RuntimeMXBean;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -108,6 +111,56 @@ import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 @Singleton
 @Slf4j
 public class RuneLite {
+	// Multi-instance cache isolation -- MUST run before RUNELITE_DIR (and every path derived
+	// from it below) is computed, since it works by overriding the "user.home" system property
+	// that this field -- and the injected game client itself, which derives its own jagexcache
+	// path off "user.home" the exact same way -- both read fresh at the time they need it.
+	//
+	// 2026-09-16 incident: a player running two clients at once on the same machine (a second
+	// launcher while already logged in on a first) hit error_game_js5crc immediately on the
+	// second instance. Both instances point at the literal same on-disk jagexcache folder by
+	// default (RUNELITE_DIR is a fixed, non-instance-specific path) -- confirmed real, since the
+	// crash is otherwise unexplained (server cache untouched since boot, no correlation to
+	// player location/content, survives full cache wipes since the corruption is freshly
+	// recreated by the SECOND process racing the first every time, not caused by stale data).
+	// The existing self-heal (CacheVersionGuard's wipe-then-retry) can only clean up after the
+	// fact; it can't prevent two live processes from concurrently reading/writing the same JS5
+	// cache files in the first place.
+	//
+	// Fix: on startup, try to acquire an exclusive OS-level lock on a marker file inside the
+	// normal RUNELITE_DIR. A single running instance always gets it immediately and proceeds
+	// completely unchanged. If it's already held (a second instance), redirect ONLY this
+	// process's "user.home" to an isolated per-process directory before anything below reads
+	// it, so the two instances never touch the same cache files. The lock is intentionally
+	// never released by this process -- the OS drops it automatically on exit (clean or
+	// crashed), which is exactly what the next launch's attempt needs to see.
+	static {
+		isolateIfSecondInstance();
+	}
+
+	private static void isolateIfSecondInstance() {
+		try {
+			File realHome = new File(System.getProperty("user.home"));
+			File lockDir = new File(realHome, ".zelus/.runelite");
+			lockDir.mkdirs();
+			FileChannel channel = new FileOutputStream(new File(lockDir, "instance.lock")).getChannel();
+			FileLock lock = channel.tryLock();
+			if (lock == null) {
+				File altHome = new File(realHome, ".zelus-multiclient-" + ProcessHandle.current().pid());
+				altHome.mkdirs();
+				System.setProperty("user.home", altHome.getAbsolutePath());
+				System.err.println("Another client instance is already running -- using an isolated cache "
+						+ "directory for this instance to avoid a shared-cache JS5 crash: " + altHome);
+			}
+			// "channel"/"lock" deliberately left open for this process's entire lifetime.
+		} catch (Exception e) {
+			// Never block startup over this -- worst case, multi-clienting is exactly as risky
+			// as before this fix; a single running instance is unaffected either way, since it
+			// always acquires the lock without hitting this branch at all.
+			System.err.println("Failed to run multi-instance cache isolation check (non-fatal): " + e);
+		}
+	}
+
 	public static final File RUNELITE_DIR = new File(System.getProperty("user.home"), ".zelus/.runelite");
 	public static final File CACHE_DIR = new File(RUNELITE_DIR, "cache");
 	public static final File PLUGINS_DIR = new File(RUNELITE_DIR, "plugins");
