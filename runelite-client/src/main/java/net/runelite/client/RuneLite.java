@@ -134,6 +134,10 @@ public class RuneLite {
 	// it, so the two instances never touch the same cache files. The lock is intentionally
 	// never released by this process -- the OS drops it automatically on exit (clean or
 	// crashed), which is exactly what the next launch's attempt needs to see.
+	// Deliberately static fields, NOT local variables -- see the bug this fixed below.
+	private static FileChannel instanceLockChannel;
+	private static FileLock instanceLock;
+
 	static {
 		isolateIfSecondInstance();
 	}
@@ -143,16 +147,22 @@ public class RuneLite {
 			File realHome = new File(System.getProperty("user.home"));
 			File lockDir = new File(realHome, ".zelus/.runelite");
 			lockDir.mkdirs();
-			FileChannel channel = new FileOutputStream(new File(lockDir, "instance.lock")).getChannel();
-			FileLock lock = channel.tryLock();
-			if (lock == null) {
+			// BUG FIXED 2026-09-26: this used to assign the channel/lock to LOCAL variables. With
+			// nothing else referencing them once this method returned, the JVM was free to GC them
+			// at any point during the session -- and FileChannel's finalizer/cleaner closes the fd
+			// on collection, which silently releases the OS-level lock out from under a still-running
+			// process. Confirmed via a clean two-instance repro: neither instance ever redirected to
+			// an isolated cache dir, meaning the "held" lock wasn't reliably held for the session.
+			// Storing them in static fields keeps a permanent GC root for this process's lifetime.
+			instanceLockChannel = new FileOutputStream(new File(lockDir, "instance.lock")).getChannel();
+			instanceLock = instanceLockChannel.tryLock();
+			if (instanceLock == null) {
 				File altHome = new File(realHome, ".zelus-multiclient-" + ProcessHandle.current().pid());
 				altHome.mkdirs();
 				System.setProperty("user.home", altHome.getAbsolutePath());
 				System.err.println("Another client instance is already running -- using an isolated cache "
 						+ "directory for this instance to avoid a shared-cache JS5 crash: " + altHome);
 			}
-			// "channel"/"lock" deliberately left open for this process's entire lifetime.
 		} catch (Exception e) {
 			// Never block startup over this -- worst case, multi-clienting is exactly as risky
 			// as before this fix; a single running instance is unaffected either way, since it
