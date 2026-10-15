@@ -25,9 +25,16 @@ public class HWID {
 		String error = "";
 
 		if (os.equals(OS_WINDOWS)) {
-			hwid = runCommand("wmic baseboard get serialNumber");
-			hwid += " " + runCommand("wmic cpu get ProcessorId");
-			hwid += " " + getHDDSerialNumber("C");
+			try {
+				hwid = runCommand("wmic baseboard get serialNumber");
+				hwid += " " + runCommand("wmic cpu get ProcessorId");
+				hwid += " " + getHDDSerialNumber("C");
+			} catch (Exception e) {
+				// wmic was removed from current Windows 11 builds, which left every such player with the same
+				// "unknown: Cannot run program wmic" id (no HWID bans / alt checks). Fall back to the Windows
+				// install's MachineGuid. Machines where wmic still works keep their old id unchanged.
+				hwid = "machineguid " + getMachineGuid();
+			}
 		} else if (os.equals(OS_MAC)) {
 			String result = runCommand("system_profiler SPHardwareDataType | awk '/Serial/ {print $4}'");
 			hwid = result.substring(result.indexOf("Hardware UUID: ") + 15);
@@ -74,6 +81,17 @@ public class HWID {
 		} else {
 			return result.toString();
 		}
+	}
+
+	/** HKLM\SOFTWARE\Microsoft\Cryptography MachineGuid, via reg.exe (present on every Windows). No inner classes: this
+	 * class is copied into the gamepack on its own by HWIDInject. */
+	private static String getMachineGuid() throws Exception {
+		String out = runCommand("reg query HKLM\\SOFTWARE\\Microsoft\\Cryptography /v MachineGuid");
+		java.util.regex.Matcher m = java.util.regex.Pattern
+			.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}").matcher(out);
+		if (!m.find())
+			throw new IllegalStateException("no MachineGuid");
+		return m.group().toLowerCase();
 	}
 
 	public static String getHDDSerialNumber(String drive) {

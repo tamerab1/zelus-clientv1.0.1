@@ -321,6 +321,35 @@ class PluginListPanel extends PluginPanel
 		{
 			log.warn("Error when stopping plugin {}", plugin.getClass().getSimpleName(), ex);
 		}
+		startPartnerRenderer(plugin);
+	}
+
+	/**
+	 * Zelus: one GPU renderer is always on. Turning "117 HD" off starts "GPU" and turning "GPU" off starts "117 HD":
+	 * without a GPU renderer the client falls back to software drawing, which froze on the canvas OpenGL had used
+	 * (2026-10-15). Only a player's own toggle comes through here; conflict stops (turning one on stops the other) go
+	 * through PluginManager directly, so this can never loop.
+	 */
+	private void startPartnerRenderer(Plugin stopped)
+	{
+		PluginDescriptor stoppedDesc = stopped.getClass().getAnnotation(PluginDescriptor.class);
+		String partner = stoppedDesc == null ? null
+			: "GPU".equals(stoppedDesc.name()) ? "117 HD"
+			: "117 HD".equals(stoppedDesc.name()) ? "GPU" : null;
+		if (partner == null)
+		{
+			return;
+		}
+		for (Plugin candidate : pluginManager.getPlugins())
+		{
+			PluginDescriptor desc = candidate.getClass().getAnnotation(PluginDescriptor.class);
+			if (desc != null && partner.equals(desc.name()))
+			{
+				// after the stopped renderer has fully let go of the canvas
+				SwingUtilities.invokeLater(() -> startPlugin(candidate));
+				return;
+			}
+		}
 	}
 
 	private List<String> getPinnedPluginNames()

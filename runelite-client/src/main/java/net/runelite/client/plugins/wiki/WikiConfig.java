@@ -51,6 +51,7 @@ public interface WikiConfig extends Config
 	)
 	default boolean showWikiMinimapButton()
 	{
-		return true;
+		// Zelus: no wiki banner on the minimap (the Teleports orb sits there); players can still turn it back on
+		return false;
 	}
 }

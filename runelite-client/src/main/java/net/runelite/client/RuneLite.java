@@ -236,6 +236,17 @@ public class RuneLite {
 	private TelemetryClient telemetryClient;
 
 	public static void main(String[] args) throws Exception {
+		// Java2D's Direct3D pipeline hangs the client forever on dual-GPU laptops when it draws without the GPU
+		// plugin (2026-10-15: GPU + HD off froze in D3DScreenUpdateManager.runUpdateNow). The official launcher turns it
+		// off; the client is started with plain "java -jar", so turn it off here, before AWT loads. -D flags still win.
+		if (System.getProperty("sun.java2d.d3d") == null)
+		{
+			System.setProperty("sun.java2d.d3d", "false");
+		}
+		if (System.getProperty("sun.java2d.noddraw") == null)
+		{
+			System.setProperty("sun.java2d.noddraw", "true");
+		}
 		Locale.setDefault(Locale.ENGLISH);
 
 		// Must run before ANYTHING else (including the Preloader thread started below) ever

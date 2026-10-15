@@ -306,6 +306,77 @@ public enum Material {
 	BRICK_BROWN_HORIZONTAL(120),
 	BRICK_CAM_TORUM(125),
 	BRICK_CAM_TORUM_2(126),
+	// Zelus custom: recoloured copies of INFERNAL_CAPE's texture 59 (Glacial/Cosmic/Void capes)
+	GLACIAL_CAPE(154, p -> p
+		.setUnlit(true)
+		.setOverrideBaseColor(true)
+		.setFlowMap(LAVA_FLOW_MAP, 0.02f, 12, 4)
+		.setScroll(0, 0)),
+	COSMIC_CAPE(155, p -> p
+		.setUnlit(true)
+		.setOverrideBaseColor(true)
+		.setFlowMap(LAVA_FLOW_MAP, 0.02f, 12, 4)
+		.setScroll(0, 0)),
+	VOID_CAPE(156, p -> p
+		.setUnlit(true)
+		.setOverrideBaseColor(true)
+		.setFlowMap(LAVA_FLOW_MAP, 0.02f, 12, 4)
+		.setScroll(0, 0)),
+	// Zelus custom: recoloured copies of FIRE_CAPE's texture 40: Lunar Fire 208 (frost silver, was "Glacial Fire"), Umbral Fire 209 (blood
+	// shadow), Venomous Fire 207. 205/206 were the first pass, left unused.
+	GLACIAL_FIRE_CAPE(208, p -> p
+		.setUnlit(true)
+		.setOverrideBaseColor(true)
+		.setFlowMap(LAVA_FLOW_MAP, 0.05f, 12, 4)
+		.setScroll(0, 1 / -3f)),
+	UMBRAL_FIRE_CAPE(209, p -> p
+		.setUnlit(true)
+		.setOverrideBaseColor(true)
+		.setFlowMap(LAVA_FLOW_MAP, 0.05f, 12, 4)
+		.setScroll(0, 1 / -3f)),
+	VENOMOUS_FIRE_CAPE(207, p -> p
+		.setUnlit(true)
+		.setOverrideBaseColor(true)
+		.setFlowMap(LAVA_FLOW_MAP, 0.05f, 12, 4)
+		.setScroll(0, 1 / -3f)),
+	// Zelus custom: recoloured copies of RED_LAVA's texture 56 (the Judicator set's cell texture),
+	// used by the animated-texture test items. Same (default) settings as RED_LAVA.
+	FROSTBRAND(157),
+	SOULFIRE(158),
+	VOIDREND(159),
+	EMBERFORGED(160),
+	// Textured real items (Prismatic partyhat, Festive santa hat): also copies of texture 56.
+	PRISMATIC(161),
+	FESTIVE(162),
+	// Round 4 textured items/hats/pets: recoloured copies of textures 56 and 59 (textured_r4_build.py).
+	NIGHTWEAVER(163),
+	KINGSGUARD(164),
+	WILDFANG(165),
+	FORSAKEN(166),
+	BROODMOTHER(167),
+	GRIZZLEMAW(168),
+	SKYHUNTER(169),
+	GLACIUS(170),
+	SOLARFLARE(171),
+	WILDSTALKER(172),
+	MAGMACORE(173),
+	STARHEART(174),
+	GALAXY_PARTYHAT(175),
+	TOXIC_PARTYHAT(176),
+	INFERNO_PARTYHAT(177),
+	FROSTBITE_PARTYHAT(178),
+	AURORA_SANTA(179),
+	MIDNIGHT_SANTA(180),
+	CANDY_CANE_SANTA(181),
+	GOLDEN_SANTA(182),
+	SERAPHIC_AGGY(183),
+	BLOOMFIRE_SPROUT(184),
+	EMBERSCALE_DRACO(185),
+	COSMIC_FLOW(186), // tier 3 combat pets + Ascended Bestiary (tier_pets_texture.txt)
+	ELECTRIC_FLOW(187), // tier 2 combat pets
+	INFERNAL_FURY(195), // boxing gloves T4 (boxing_texture.txt)
+	COSMIC_CHAMPION(196), // boxing gloves T5
+	BOXING_CHEST_FLOW(197), // Boxing Mystery Chest
 
 	WHITE(NONE),
 	GRAY_150(NONE, p -> p.setBrightness(ColorUtils.srgbToLinear(1.5f))),
