@@ -65,7 +65,8 @@ class WeaponSparklesOverlay extends Overlay
 	 * the sparkles find their faces on the model.
 	 */
 	static boolean isCelestial(int itemId) {
-		return itemId == CELESTIAL_TWISTED_BOW || itemId == 31784 || itemId == 31786 || itemId == 31788;
+		return itemId == CELESTIAL_TWISTED_BOW || itemId == 31784 || itemId == 31786 || itemId == 31788
+			|| itemId == 31818; // Nightfall bow (celestial)
 	}
 	/** NPCs that wear the bow (a baked copy with the same navy limbs): the Cape Forge Master at home. */
 	private static final int[] BOW_NPCS = {3873};

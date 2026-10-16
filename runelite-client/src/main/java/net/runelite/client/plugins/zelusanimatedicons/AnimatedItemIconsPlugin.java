@@ -45,6 +45,8 @@ public class AnimatedItemIconsPlugin extends Plugin
 		31714, 31720, 31726, 31732, 31738, 31744, // tier 3 combat pets (cosmic texture 186)
 		31746, // Ascended Bestiary
 		31748, // Astral Spore
+		31816, // Combat Pet Shard
+		31818, // Nightfall bow (celestial), texture 235
 		31754, // Infernal Fury Gloves (boxing T4, lava texture 195)
 		31756, // Cosmic Champion Gloves (boxing T5, cosmic blend texture 196)
 		31758, // Boxing Mystery Chest (royal flow texture 197)
