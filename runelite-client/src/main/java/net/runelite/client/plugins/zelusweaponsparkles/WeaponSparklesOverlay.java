@@ -35,7 +35,8 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 
 /**
- * Gold specks that cling to the Twisted bow (celestial): players wielding it, and NPCs dressed in it (BOW_NPCS).
+ * Specks that cling to the celestial weapons: gold on most, a tight blue-white glow on the Twisted bow (celestial)
+ * (players wielding it, and NPCs dressed in it: BOW_NPCS).
  * <p>
  * The bow is found by colour: its limbs are recoloured to a navy (hue 43, saturation 4) that the lit face colours keep
  * (lighting only changes lightness), so every visible face with that hue/saturation is part of the bow.
@@ -85,6 +86,8 @@ class WeaponSparklesOverlay extends Overlay
 	};
 	/** Set while tracking a Cosmic Wings wearer (the wings share the cape slot, so never with the Champion cape). */
 	private boolean wingsMode;
+	/** Set while tracking a Twisted bow (celestial): spawn GLOW points instead of gold specks. */
+	private boolean glowMode;
 	/** The cape's gold: 9/6 is mostly the collar, 8/6 the main trim down to the hem (rivals_items.txt recolours). */
 	private static final int CAPE_HUE_SAT = 9 << 3 | 6, CAPE_TRIM_HUE_SAT = 8 << 3 | 6;
 	private static final int SPARKS_PER_FRAME = 2;
@@ -101,6 +104,15 @@ class WeaponSparklesOverlay extends Overlay
 	private static final Color[] TINTS = {
 		new Color(255, 214, 90), new Color(255, 236, 150), new Color(255, 250, 215), new Color(240, 190, 60)
 	};
+	/**
+	 * Twisted bow (celestial) only (2026-10-17, replacing its loose gold specks): a tight blue-white glow that sits ON the
+	 * limbs. Points never drift, are 1-2px, live a little longer and spawn more densely, so they read as a shimmer
+	 * along the bow rather than particles around it.
+	 */
+	private static final Color[] GLOW_TINTS = {
+		new Color(235, 245, 255), new Color(200, 228, 255), new Color(170, 210, 255), new Color(140, 190, 255)
+	};
+	private static final int GLOW_PER_FRAME = 6, GLOW_MAX_PARTICLES = 220;
 
 	private final Client client;
 	private final List<Spark> sparks = new ArrayList<>();
@@ -114,6 +126,7 @@ class WeaponSparklesOverlay extends Overlay
 		float driftX, driftY, age, life;
 		int size;
 		Color tint;
+		boolean glow;
 	}
 
 	/** A model projected for this frame: screen x/y and camera depth per vertex (depth < NEAR = behind the camera). */
@@ -174,8 +187,10 @@ class WeaponSparklesOverlay extends Overlay
 			{
 				dWielders++;
 				wingsMode = wings;
+				glowMode = bow && player.getPlayerComposition().getEquipmentId(KitType.WEAPON) == CELESTIAL_TWISTED_BOW;
 				track(cam, view, wielders, occluders, player, player.getFootprintSize(), bow, cape || wings);
 				wingsMode = false;
+				glowMode = false;
 			}
 		}
 		for (NPC npc : view.npcs())
@@ -184,7 +199,9 @@ class WeaponSparklesOverlay extends Overlay
 			if (bow || cape)
 			{
 				NPCComposition comp = npc.getTransformedComposition();
+				glowMode = bow; // BOW_NPCS hold the Twisted bow (celestial)
 				track(cam, view, wielders, occluders, npc, comp == null ? 1 : comp.getFootprintSize(), bow, cape);
+				glowMode = false;
 			}
 		}
 
@@ -340,8 +357,9 @@ class WeaponSparklesOverlay extends Overlay
 		}
 		ThreadLocalRandom rnd = ThreadLocalRandom.current();
 		// the cape alone is subtler: one speck a frame off its hem (sparse drifting motes)
-		int perFrame = bow ? SPARKS_PER_FRAME : 1;
-		for (int n = 0; n < perFrame && sparks.size() < MAX_PARTICLES; n++)
+		int perFrame = glowMode ? GLOW_PER_FRAME : bow ? SPARKS_PER_FRAME : 1;
+		int cap = glowMode ? GLOW_MAX_PARTICLES : MAX_PARTICLES;
+		for (int n = 0; n < perFrame && sparks.size() < cap; n++)
 		{
 			Spark s = new Spark();
 			s.owner = actor;
@@ -362,6 +380,16 @@ class WeaponSparklesOverlay extends Overlay
 			int roll = rnd.nextInt(10);
 			s.size = roll < 6 ? 1 : roll < 9 ? 2 : 3;
 			s.tint = wingsMode ? STAR_TINTS[rnd.nextInt(STAR_TINTS.length)] : TINTS[rnd.nextInt(TINTS.length)];
+			if (glowMode)
+			{
+				// glued to its point on the limb: no drift at all
+				s.glow = true;
+				s.driftX = 0f;
+				s.driftY = 0f;
+				s.life = 0.35f + rnd.nextFloat() * 0.25f;
+				s.size = rnd.nextInt(4) == 0 ? 2 : 1;
+				s.tint = GLOW_TINTS[rnd.nextInt(GLOW_TINTS.length)];
+			}
 			sparks.add(s);
 			dSpawned++;
 		}
@@ -592,6 +620,18 @@ class WeaponSparklesOverlay extends Overlay
 		int x = Math.round(fx), y = Math.round(fy);
 		int a = Math.max(0, Math.min(255, (int) (alpha * 255)));
 		Color c = s.tint;
+		if (s.glow)
+		{
+			// a pinpoint core; the larger points get a faint 3x3 bloom so the limbs read as softly lit
+			if (s.size >= 2)
+			{
+				g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), a / 5));
+				g.fillRect(x - 1, y - 1, 3, 3);
+			}
+			g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), a));
+			g.fillRect(x, y, 1, 1);
+			return;
+		}
 		if (s.size >= 3)
 		{
 			// tiny cross-shaped glint with a soft halo

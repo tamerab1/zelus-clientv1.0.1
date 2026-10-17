@@ -35,7 +35,7 @@ public final class CacheVersionGuard
 	// 2026-09-16: bumped so EVERY player gets a proactive, silent, one-time wipe on their very next
 	// launch -- before any js5crc crash can happen at all -- instead of only self-healing reactively
 	// after they've already hit the crash once. See project_js5crc_crash_saga_20260916 memory notes.
-	private static final String CACHE_REVISION = "v1.1.100-full-resync"; // v1.1.100: Sanctum maps, forge re-skin, celestial bow -- large cache change
+	private static final String CACHE_REVISION = "v1.1.102-full-resync"; // v1.1.102: Statue of Fortune + mounts data, Challenge Bell, Morveth (or) texture, forge renames
 
 	// See beginSession()/markSessionSafe()'s javadocs -- a SEPARATE, always-on safety net
 	// (independent of CACHE_REVISION) for a player closing the client mid-download, or any other
