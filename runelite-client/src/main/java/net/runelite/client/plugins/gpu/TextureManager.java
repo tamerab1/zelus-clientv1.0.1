@@ -37,7 +37,10 @@ import org.lwjgl.opengl.GL43C;
 @Slf4j
 class TextureManager
 {
-	static final int TEXTURE_COUNT = 256;
+	// Zelus: the custom cache has more than 256 textures (soul / boss / forge textures from 235 up); the animation table
+	// in geom.glsl is indexed by min(id, TEXTURE_COUNT - 1), so every texture past 256 was drawn standing still (flat).
+	// 384 vec2 = 768 uniform components, inside GL 4.3's 1024 minimum for the geometry stage.
+	static final int TEXTURE_COUNT = 384;
 	private static final int TEXTURE_SIZE = 128;
 
 	int initTextureArray(TextureProvider textureProvider)
