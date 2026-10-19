@@ -52,6 +52,7 @@ import net.runelite.client.plugins.PluginManager;
 import net.runelite.api.GameState;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.rs.CacheDownloadProgress;
 import net.runelite.client.rs.CacheVersionGuard;
 import net.runelite.client.rs.ClientUpdateCheckMode;
 import net.runelite.client.rs.ReasonClientLoader;
@@ -313,6 +314,7 @@ public class RuneLite {
 
 		SplashScreen.init();
 		SplashScreen.stage(0, "Retrieving client", "");
+		boolean startedOk = false;
 
 		try {
 			final RuntimeConfigLoader runtimeConfigLoader = new RuntimeConfigLoader(okHttpClient);
@@ -358,6 +360,7 @@ public class RuneLite {
 			final long end = System.currentTimeMillis();
 			final long uptime = runtime.getUptime();
 			log.info("Client initialization took {}ms. Uptime: {}ms", end - start, uptime);
+			startedOk = true;
 		} catch (Exception e) {
 			log.error("Failure during startup", e);
 			SwingUtilities
@@ -366,6 +369,10 @@ public class RuneLite {
 							.open());
 		} finally {
 			SplashScreen.stop();
+		}
+		if (startedOk) {
+			// the engine may still be downloading its cache behind its own loading screen -- see CacheDownloadProgress
+			CacheDownloadProgress.start();
 		}
 	}
 

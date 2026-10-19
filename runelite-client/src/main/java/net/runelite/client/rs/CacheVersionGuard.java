@@ -96,41 +96,71 @@ public final class CacheVersionGuard
 
 	/**
 	 * Detects "the previous launch on this machine never got past its risky startup phase" --
-	 * regardless of CACHE_REVISION -- and wipes jagexcache if so, before writing a fresh marker for
-	 * THIS launch. Call once, at the very top of RuneLite.main(), right alongside runIfNeeded().
+	 * regardless of CACHE_REVISION -- and decides whether to keep or wipe jagexcache, before writing a
+	 * fresh marker for THIS launch. Call once, at the very top of RuneLite.main(), right alongside
+	 * runIfNeeded().
 	 * <p>
 	 * How: a marker file is written here at the START of every launch, and only removed by
-	 * {@link #markSessionSafe()} once the client actually reaches the login screen (proof the JS5
-	 * sync succeeded -- a crash during that sync, by definition, never gets this far). If that
-	 * marker is STILL present when this method runs, the only way that's possible is that the
-	 * previous launch started, wrote it, and then died before ever reaching the login screen --
-	 * exactly the class of failure a player closing the client mid-download produces, and exactly
-	 * the class runIfNeeded()'s one-shot-per-revision wipe can't help with a second time. This
-	 * check doesn't need to know WHY the previous run died (its crash may not even be catchable --
-	 * the actual JS5 engine is unmodified, obfuscated third-party code, not this fork's own), only
-	 * THAT it did, which this marker proves independently of any specific error message.
+	 * {@link #markSessionSafe()} once the client actually reaches the login screen. If that marker
+	 * is STILL present when this method runs, the previous launch started and then died (or was
+	 * closed) before ever reaching the login screen.
+	 * <p>
+	 * 2026-10-19 ("it stays on loading then just freezes"): this used to wipe jagexcache EVERY time
+	 * that happened. A player on a slow connection who closed the client mid-download -- because a
+	 * long first-launch download looks frozen -- lost everything downloaded so far, and every retry
+	 * started from zero again, so they could never get in. Now the marker records how big the cache
+	 * was when that launch began, and the next launch decides from it:
+	 * <ul>
+	 *     <li>the cache GREW since then: the download was progressing -- keep it, the engine resumes
+	 *     from what is already on disk (an archive that really is corrupt still gets caught by the
+	 *     js5crc handler, see {@link #wipeCacheNow(String)});</li>
+	 *     <li>no growth, and that launch had already started from a wipe: wiping again can't help (it
+	 *     is the connection, not the cache) -- keep it, never wipe twice in a row;</li>
+	 *     <li>no growth, no wipe before: the cache may be stuck on a bad file -- wipe it once.</li>
+	 * </ul>
+	 * A marker from an older client (empty file, no size) counts as progress: keep the cache.
 	 */
 	public static void beginSession()
 	{
+		boolean wipedNow = false;
 		try
 		{
+			long size = cacheSize();
 			if (SESSION_MARKER.exists())
 			{
-				log.info("Previous session never reached the login screen -- wiping local jagexcache "
-						+ "in case it was left mid-download or otherwise corrupt");
-				File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
-				if (jagexCache.exists())
+				String[] prev = new String(Files.readAllBytes(SESSION_MARKER.toPath()), StandardCharsets.UTF_8).trim().split(" ");
+				long prevSize = prev.length >= 1 && !prev[0].isEmpty() ? Long.parseLong(prev[0]) : -1;
+				boolean prevWiped = prev.length >= 2 && "1".equals(prev[1]);
+				if (prevSize < 0 || size > prevSize)
 				{
-					deleteRecursively(jagexCache);
+					log.info("Previous session never reached the login screen, but its download was progressing "
+						+ "({} -> {} bytes) -- keeping the local jagexcache so it resumes", prevSize, size);
 				}
-				deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea"));
-				deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea.json"));
+				else if (prevWiped)
+				{
+					log.info("Previous session never reached the login screen and made no progress from an already "
+						+ "wiped cache -- not wiping again (connection problem, not a cache problem)");
+				}
+				else
+				{
+					log.info("Previous session never reached the login screen and made no progress -- wiping "
+						+ "local jagexcache once in case it is stuck on a corrupt file");
+					File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+					if (jagexCache.exists())
+					{
+						deleteRecursively(jagexCache);
+					}
+					deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea"));
+					deleteIfExists(new File(RuneLite.CACHE_DIR, "xtea.json"));
+					wipedNow = true;
+					size = 0;
+				}
 			}
 
 			SESSION_MARKER.getParentFile().mkdirs();
-			Files.write(SESSION_MARKER.toPath(), new byte[0]);
+			Files.write(SESSION_MARKER.toPath(), (size + " " + (wipedNow ? 1 : 0)).getBytes(StandardCharsets.UTF_8));
 		}
-		catch (IOException e)
+		catch (IOException | NumberFormatException e)
 		{
 			log.warn("Failed to run session-crash check", e);
 		}
@@ -145,6 +175,28 @@ public final class CacheVersionGuard
 	public static void markSessionSafe()
 	{
 		deleteIfExists(SESSION_MARKER);
+		CacheDownloadProgress.finish(true);
+	}
+
+	/** The engine's cache folder (jagexcache/oldschool/LIVE). */
+	static final File LIVE_CACHE = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache/oldschool/LIVE");
+
+	/** Bytes in the engine's cache folder right now (0 when it doesn't exist yet). */
+	static long cacheSize()
+	{
+		long total = 0;
+		File[] files = LIVE_CACHE.listFiles();
+		if (files != null)
+		{
+			for (File f : files)
+			{
+				if (f.isFile())
+				{
+					total += f.length();
+				}
+			}
+		}
+		return total;
 	}
 
 	/**
@@ -168,6 +220,8 @@ public final class CacheVersionGuard
 	 */
 	public static void wipeCacheNow(String reason)
 	{
+		// the error dialog that follows must not open underneath the download progress window
+		CacheDownloadProgress.finish(false);
 		// Durable half first: a plain new file, never locked by anything, so this always succeeds.
 		// Guarantees the wipe happens on the NEXT launch even if the immediate attempt below can't
 		// finish right now. See this field's javadoc for why the immediate attempt alone can't be

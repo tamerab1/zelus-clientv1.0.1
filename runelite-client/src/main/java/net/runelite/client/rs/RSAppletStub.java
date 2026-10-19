@@ -130,6 +130,9 @@ class RSAppletStub implements AppletStub
 						.replace("/", "")
 						.replace(".ws", "");
 
+					// every branch below opens a dialog: close the download progress window first
+					CacheDownloadProgress.finish(false);
+
 					if (code.equals("error_game_js5connect"))
 					{
 						SwingUtilities.invokeLater(() ->

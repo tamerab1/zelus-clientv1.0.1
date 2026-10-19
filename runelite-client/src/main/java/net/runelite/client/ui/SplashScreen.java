@@ -189,6 +189,22 @@ public class SplashScreen extends JFrame implements ActionListener
 		}
 	}
 
+	/**
+	 * Brings the splash back in front when another window of this client is the active one (a player clicking
+	 * the game window while CacheDownloadProgress shows the download). Never raises it over other programs.
+	 */
+	public static void raiseOverClient()
+	{
+		SwingUtilities.invokeLater(() ->
+		{
+			java.awt.Window active = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+			if (INSTANCE != null && active != null && active != INSTANCE)
+			{
+				INSTANCE.toFront();
+			}
+		});
+	}
+
 	public static void stop()
 	{
 		SwingUtilities.invokeLater(() ->
