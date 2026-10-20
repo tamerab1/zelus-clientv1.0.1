@@ -98,18 +98,6 @@ public interface BetterDiscordLootLoggerConfig extends Config
         return 50_000_000;
     }
 
-    @ConfigItem(
-            keyName = "collectionLogItem",
-            name = "Include collection log items",
-            description = "Configures whether a message will be automatically sent to discord when you obtain a new collection log item.",
-            position = 8,
-            section = whatToSendSection
-    )
-    default boolean includeCollectionLogItems()
-    {
-        return true;
-    }
-
 	@ConfigItem(
 		keyName = "raidLoot",
 		name = "Include raid loot (Experimental)",

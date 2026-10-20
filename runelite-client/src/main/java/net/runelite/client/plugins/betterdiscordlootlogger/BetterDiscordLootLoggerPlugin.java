@@ -42,12 +42,9 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.ScriptID;
-import net.runelite.api.VarClientStr;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.ScriptPreFired;
 import net.runelite.api.events.UsernameChanged;
 import net.runelite.api.events.WidgetLoaded;
 import static net.runelite.api.widgets.WidgetID.CHAMBERS_OF_XERIC_REWARD_GROUP_ID;
@@ -78,7 +75,6 @@ import okhttp3.Response;
 )
 public class BetterDiscordLootLoggerPlugin extends Plugin
 {
-	private static final String COLLECTION_LOG_TEXT = "New item added to your collection log: ";
 	private static final Pattern VALUABLE_DROP_PATTERN = Pattern.compile(".*Valuable drop: ([^<>]+?\\(((?:\\d+,?)+) coins\\))(?:</col>)?");
 	private static final ImmutableList<String> PET_MESSAGES = ImmutableList.of("You have a funny feeling like you're being followed",
 		"You feel something weird sneaking into your backpack",
@@ -90,7 +86,6 @@ public class BetterDiscordLootLoggerPlugin extends Plugin
 	private static final Pattern KC_MESSAGE_PATTERN = Pattern.compile("([0-9]+)");
 
 	private boolean shouldSendMessage;
-	private boolean notificationStarted;
 	enum RaidType
 	{
 		COX,
@@ -142,7 +137,6 @@ public class BetterDiscordLootLoggerPlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		keyManager.unregisterKeyListener(hotkeyListener);
-		notificationStarted = false;
 	}
 
 	@Subscribe
@@ -196,11 +190,9 @@ public class BetterDiscordLootLoggerPlugin extends Plugin
 			}
 		}
 
-		if (config.includeCollectionLogItems() && chatMessage.startsWith(COLLECTION_LOG_TEXT) && client.getVarbitValue(Varbits.COLLECTION_LOG_NOTIFICATION) == 1)
-		{
-			String entry = Text.removeTags(chatMessage).substring(COLLECTION_LOG_TEXT.length());
-			sendMessage(entry, 0, "", "", "collection log");
-		}
+		// Collection log unlocks are no longer posted from here (2026-10-20, #ingame-drops spam: every unlock, even
+		// trimmed clue armour, went out with a screenshot). The server posts the notable ones itself
+		// (collectionlog CollectionLog.isNotableDrop: pets, 10M+ alch value, flagged rare uniques).
 
 		if (config.includeRaidLoot())
 		{
@@ -322,31 +314,6 @@ public class BetterDiscordLootLoggerPlugin extends Plugin
 			raidItemName = null;
 			raidType = null;
 			raidKc = 0;
-		}
-	}
-
-	@Subscribe
-	public void onScriptPreFired(ScriptPreFired scriptPreFired)
-	{
-		switch (scriptPreFired.getScriptId())
-		{
-			case ScriptID.NOTIFICATION_START:
-				notificationStarted = true;
-				break;
-			case ScriptID.NOTIFICATION_DELAY:
-				if (!notificationStarted)
-				{
-					return;
-				}
-				String notificationTopText = client.getVarcStrValue(VarClientStr.NOTIFICATION_TOP_TEXT);
-				String notificationBottomText = client.getVarcStrValue(VarClientStr.NOTIFICATION_BOTTOM_TEXT);
-				if (notificationTopText.equalsIgnoreCase("Collection log") && config.includeCollectionLogItems())
-				{
-					String entry = Text.removeTags(notificationBottomText).substring("New item:".length());
-					sendMessage(entry, 0, "","", "collection log");
-				}
-				notificationStarted = false;
-				break;
 		}
 	}
 
