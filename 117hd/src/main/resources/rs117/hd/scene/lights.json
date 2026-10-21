@@ -1,5 +1,23 @@
 [
   {
+    "description": "ZELUS_EVENT_CAVERN_BRAZIER (wrought-iron brazier 33454 round the ::gb / ::vb / ::db cavern, 2026-10-21)",
+    "height": 150,
+    "alignment": "CENTER",
+    "radius": 520,
+    "strength": 9,
+    "color": [
+      255,
+      140,
+      40
+    ],
+    "type": "FLICKER",
+    "duration": 0,
+    "range": 20,
+    "objectIds": [
+      33454
+    ]
+  },
+  {
     "description": "lava",
     "worldX": 2467,
     "worldY": 5174,

@@ -35,7 +35,10 @@ public final class CacheVersionGuard
 	// 2026-09-16: bumped so EVERY player gets a proactive, silent, one-time wipe on their very next
 	// launch -- before any js5crc crash can happen at all -- instead of only self-healing reactively
 	// after they've already hit the crash once. See project_js5crc_crash_saga_20260916 memory notes.
-	private static final String CACHE_REVISION = "v1.1.108-full-resync"; // v1.1.108: Pandora lair rebuild (m/l30_78), event boss cavern (39_77, 40_77), armour sets 31870-31913, 5 redesigned interfaces, custom bosses 16217-16225. v1.1.105: Soulbound weapons, Soul Sanctuary (map m48_54 / l48_54), ~25 cache rounds (models, textures, sprites, spotanims, interfaces 1174-1176, locs)
+	// 2026-10-21: back to v1.1.105 -- NO forced full resync with the next client release. The live server could never
+	// serve 4 cache archives (see server project_js5_unservable_archives memory), so a forced full re-download would
+	// have stalled every player on the loading screen. Incremental js5 updates cover v1.1.106-v1.1.108 already.
+	private static final String CACHE_REVISION = "v1.1.105-full-resync"; // v1.1.105: Soulbound weapons, Soul Sanctuary (map m48_54 / l48_54), ~25 cache rounds (models, textures, sprites, spotanims, interfaces 1174-1176, locs)
 
 	// See beginSession()/markSessionSafe()'s javadocs -- a SEPARATE, always-on safety net
 	// (independent of CACHE_REVISION) for a player closing the client mid-download, or any other

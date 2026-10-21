@@ -1,5 +1,17 @@
 [
   {
+    "name": "ZELUS_HOME_CASINO_FLOOR",
+    "aabbs": [
+      [ 3114, 3464, 3134, 3476 ]
+    ]
+  },
+  {
+    "name": "ZELUS_HOME",
+    "aabbs": [
+      [ 3072, 3456, 3135, 3519 ]
+    ]
+  },
+  {
     "name": "EVIL_BOB_ISLAND",
     "aabbs": [
       [ 2496, 4748, 2559, 4801 ]

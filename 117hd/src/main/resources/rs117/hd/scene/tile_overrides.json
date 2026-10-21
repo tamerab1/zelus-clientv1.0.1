@@ -1,5 +1,21 @@
 [
   {
+    "name": "ZELUS_HOME_CASINO_CHECKER",
+    "description": "Zelus home casino floor (2026-10-21): the red / gold checker (map values 72 / 157 = overlays 71 / 156) as hard-edged gloss tiles. Without a rule the tiles fell back to NONE (dirt, blended) and smudged into muddy diamonds. Listed first so no area-wide rule outranks it.",
+    "area": "ZELUS_HOME_CASINO_FLOOR",
+    "overlayIds": [ 72, 157 ],
+    "groundMaterial": "MARBLE_1_GLOSS",
+    "blended": false
+  },
+  {
+    "name": "ZELUS_HOME_FLOORS",
+    "description": "Zelus home (map square 48_54), 2026-10-21: every untextured custom floor overlay (map values 1, 2, 3, 4, 9, 10, 11, 37, 86, 116, 117 -- bank, hub, shops, Slayer room surround) as unblended gloss tiles in its own colour, like GPU mode. Without this the vanilla Edgeville rules (bank marble at a fixed lightness) and the dirt fallback washed them out. Textured floors (Slayer room flagstones 174, cobbles 12, water 6) are deliberately NOT listed: a rule would replace their vanilla texture. After ZELUS_HOME_CASINO_CHECKER, before every vanilla rule.",
+    "area": "ZELUS_HOME",
+    "overlayIds": [ 1, 2, 3, 4, 9, 10, 11, 37, 86, 116, 117 ],
+    "groundMaterial": "MARBLE_1_GLOSS",
+    "blended": false
+  },
+  {
     "name": "DEFAULT_GRASS",
     "groundMaterial": "OVERWORLD_GRASS_1"
   },
