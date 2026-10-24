@@ -30,11 +30,11 @@ import java.time.Instant;
 import javax.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
+import net.runelite.api.ItemLayer;
 import static net.runelite.api.TileItem.OWNERSHIP_GROUP;
 import static net.runelite.api.TileItem.OWNERSHIP_NONE;
 import static net.runelite.api.TileItem.OWNERSHIP_OTHER;
 import static net.runelite.api.TileItem.OWNERSHIP_SELF;
-import net.runelite.api.coords.WorldPoint;
 import org.intellij.lang.annotations.MagicConstant;
 
 @Data
@@ -45,10 +45,9 @@ class GroundItem
 	private int itemId;
 	private String name;
 	private int quantity;
-	private WorldPoint location;
-	private int height;
+	private ItemLayer itemLayer;
 	private int haPrice;
-	private int gePrice;
+	private long gePrice;
 	private int offset;
 	private boolean tradeable;
 	@MagicConstant(intValues = {OWNERSHIP_NONE, OWNERSHIP_SELF, OWNERSHIP_OTHER, OWNERSHIP_GROUP})
@@ -70,7 +69,7 @@ class GroundItem
 		return haPrice * quantity;
 	}
 
-	int getGePrice()
+	long getGePrice()
 	{
 		return gePrice * quantity;
 	}

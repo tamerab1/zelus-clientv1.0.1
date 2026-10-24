@@ -30,7 +30,6 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.client.util.OSType;
@@ -48,8 +47,9 @@ import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 import rs117.hd.HdPlugin;
 import rs117.hd.opengl.shader.ShaderException;
-import rs117.hd.opengl.shader.Template;
-import rs117.hd.opengl.uniforms.ComputeUniforms;
+import rs117.hd.opengl.shader.ShaderIncludes;
+import rs117.hd.opengl.uniforms.UBOCompute;
+import rs117.hd.renderer.legacy.LegacyRenderer;
 import rs117.hd.utils.buffer.SharedGLBuffer;
 
 import static org.lwjgl.opencl.APPLEGLSharing.CL_CGL_DEVICE_FOR_CURRENT_VIRTUAL_SCREEN_APPLE;
@@ -61,8 +61,8 @@ import static org.lwjgl.opencl.KHRGLSharing.CL_WGL_HDC_KHR;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memASCII;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
+import static rs117.hd.utils.MathUtils.*;
 
-@Singleton
 @Slf4j
 public class OpenCLManager {
 	private static final String KERNEL_NAME_PASSTHROUGH = "passthroughModel";
@@ -79,6 +79,8 @@ public class OpenCLManager {
 
 	@Inject
 	private HdPlugin plugin;
+
+	private LegacyRenderer legacyRenderer;
 
 	public static long context;
 
@@ -100,12 +102,13 @@ public class OpenCLManager {
 		Configuration.OPENCL_EXPLICIT_INIT.set(true);
 	}
 
-	public void startUp(AWTContext awtContext) {
+	public void startUp(LegacyRenderer legacyRenderer, AWTContext awtContext) {
+		this.legacyRenderer = legacyRenderer;
 		CL.create();
 		initialized = true;
-		initContext(awtContext);
+		initializeContext(awtContext);
 		log.debug("Device CL_DEVICE_MAX_WORK_GROUP_SIZE: {}", getMaxWorkGroupSize());
-		initQueue();
+		initializeQueue();
 	}
 
 	public void shutDown() {
@@ -134,7 +137,7 @@ public class OpenCLManager {
 		}
 	}
 
-	private void initContext(AWTContext awtContext) {
+	private void initializeContext(AWTContext awtContext) {
 		try (var stack = MemoryStack.stackPush()) {
 			IntBuffer pi = stack.mallocInt(1);
 			checkCLError(clGetPlatformIDs(null, pi));
@@ -233,7 +236,7 @@ public class OpenCLManager {
 								long context = clCreateContext(ctxProps, device, callback, NULL, errcode_ret);
 								checkCLError(errcode_ret);
 
-								if (OSType.getOSType() == OSType.MacOS) {
+								if (HdPlugin.APPLE) {
 									var buf = stack.mallocPointer(1);
 									checkCLError(clGetGLContextInfoAPPLE(
 										context,
@@ -249,6 +252,7 @@ public class OpenCLManager {
 									}
 								}
 
+								log.debug("Choosing the above device for OpenCL");
 								this.device = device;
 								OpenCLManager.context = context;
 							} catch (Exception ex) {
@@ -272,7 +276,7 @@ public class OpenCLManager {
 		return (int) (maxWorkGroupSize[0] * 0.6f); // Workaround for https://github.com/117HD/RLHD/issues/598
 	}
 
-	private void initQueue() {
+	private void initializeQueue() {
 		long[] l = new long[1];
 		clGetDeviceInfo(device, CL_DEVICE_QUEUE_PROPERTIES, l, null);
 
@@ -280,15 +284,21 @@ public class OpenCLManager {
 		log.debug("Created command_queue {}, properties {}", commandQueue, l[0] & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE);
 	}
 
-	private long compileProgram(MemoryStack stack, String programSource) throws ShaderException {
-		log.trace("Compiling program:\n {}", programSource);
+	private long compileProgram(MemoryStack stack, String path, ShaderIncludes includes) throws ShaderException, IOException {
+		String source = includes.loadFile(path);
+		log.trace("Compiling program:\n {}", source);
 		IntBuffer errcode_ret = stack.callocInt(1);
-		long program = clCreateProgramWithSource(context, programSource, errcode_ret);
+		long program = clCreateProgramWithSource(context, source, errcode_ret);
 		checkCLError(errcode_ret);
 
 		int err = clBuildProgram(program, device, "", null, 0);
 		if (err != CL_SUCCESS)
-			throw new ShaderException(getProgramBuildInfoStringASCII(program, device, CL_PROGRAM_BUILD_LOG));
+			throw ShaderException.compileError(
+				includes,
+				source,
+				getProgramBuildInfoStringASCII(program, device, CL_PROGRAM_BUILD_LOG),
+				path
+			);
 
 		log.debug("Build status: {}", getProgramBuildInfoInt(program, device, CL_PROGRAM_BUILD_STATUS));
 		if (deviceCaps.OpenCL12)
@@ -306,31 +316,29 @@ public class OpenCLManager {
 		return kernel;
 	}
 
-	public void initPrograms() throws ShaderException, IOException {
+	public void initializePrograms() throws ShaderException, IOException {
 		try (var stack = MemoryStack.stackPush()) {
-			var template = new Template()
+			var includes = new ShaderIncludes()
 				.define("UNDO_VANILLA_SHADING", plugin.configUndoVanillaShading)
 				.define("LEGACY_GREY_COLORS", plugin.configLegacyGreyColors)
-				.define("MAX_CHARACTER_POSITION_COUNT", ComputeUniforms.MAX_CHARACTER_POSITION_COUNT)
+				.define("WIND_DISPLACEMENT", plugin.configWindDisplacement)
+				.define("WIND_DISPLACEMENT_NOISE_RESOLUTION", HdPlugin.WIND_DISPLACEMENT_NOISE_RESOLUTION)
+				.define("CHARACTER_DISPLACEMENT", plugin.configCharacterDisplacement)
+				.define("MAX_CHARACTER_POSITION_COUNT", UBOCompute.MAX_CHARACTER_POSITION_COUNT)
 				.addIncludePath(OpenCLManager.class);
-			passthroughProgram = compileProgram(stack, template.load("comp_unordered.cl"));
+			passthroughProgram = compileProgram(stack, "comp_unordered.cl", includes);
 			passthroughKernel = getKernel(stack, passthroughProgram, KERNEL_NAME_PASSTHROUGH);
 
-			sortingPrograms = new long[plugin.numSortingBins];
-			sortingKernels = new long[plugin.numSortingBins];
-			for (int i = 0; i < plugin.numSortingBins; i++) {
-				int faceCount = plugin.modelSortingBinFaceCounts[i];
-				int threadCount = plugin.modelSortingBinThreadCounts[i];
-				int facesPerThread = (int) Math.ceil((float) faceCount / threadCount);
-				sortingPrograms[i] = compileProgram(stack, template
-					.copy()
+			sortingPrograms = new long[legacyRenderer.numSortingBins];
+			sortingKernels = new long[legacyRenderer.numSortingBins];
+			for (int i = 0; i < legacyRenderer.numSortingBins; i++) {
+				int faceCount = legacyRenderer.modelSortingBinFaceCounts[i];
+				int threadCount = legacyRenderer.modelSortingBinThreadCounts[i];
+				int facesPerThread = ceil((float) faceCount / threadCount);
+				includes = includes
 					.define("THREAD_COUNT", threadCount)
-					.define("FACES_PER_THREAD", facesPerThread)
-					.define("WIND_DISPLACEMENT", plugin.configWindDisplacement)
-					.define("WIND_DISPLACEMENT_NOISE_RESOLUTION", HdPlugin.WIND_DISPLACEMENT_NOISE_RESOLUTION)
-					.define("CHARACTER_DISPLACEMENT", plugin.configCharacterDisplacement)
-					.load("comp.cl")
-				);
+					.define("FACES_PER_THREAD", facesPerThread);
+				sortingPrograms[i] = compileProgram(stack, "comp.cl", includes);
 				sortingKernels[i] = getKernel(stack, sortingPrograms[i], KERNEL_NAME_SORT);
 			}
 		}
@@ -415,10 +423,10 @@ public class OpenCLManager {
 				glBuffers.put(buffer.clId);
 			glBuffers.flip();
 
-			PointerBuffer acquireEvent = stack.mallocPointer(1);
+			PointerBuffer acquireEvent = stack.callocPointer(1);
 			CL10GL.clEnqueueAcquireGLObjects(commandQueue, glBuffers, null, acquireEvent);
 
-			PointerBuffer computeEvents = stack.mallocPointer(1 + modelSortingBuffers.length);
+			PointerBuffer computeEvents = stack.callocPointer(1 + modelSortingBuffers.length);
 			if (numPassthroughModels > 0) {
 				clSetKernelArg1p(passthroughKernel, 0, modelPassthroughBuffer.clId);
 				clSetKernelArg1p(passthroughKernel, 1, stagingBufferVertices.clId);
@@ -441,8 +449,8 @@ public class OpenCLManager {
 				if (numModels == 0)
 					continue;
 
-				int faceCount = plugin.modelSortingBinFaceCounts[i];
-				int threadCount = plugin.modelSortingBinThreadCounts[i];
+				int faceCount = legacyRenderer.modelSortingBinFaceCounts[i];
+				int threadCount = legacyRenderer.modelSortingBinThreadCounts[i];
 				long kernel = sortingKernels[i];
 
 				clSetKernelArg(kernel, 0, (long) (SHARED_SIZE + faceCount) * Integer.BYTES);
@@ -464,11 +472,19 @@ public class OpenCLManager {
 				computeEvents.position(computeEvents.position() + 1);
 			}
 
-			if (computeEvents.position() == 0) {
-				CL10GL.clEnqueueReleaseGLObjects(commandQueue, glBuffers, null, null);
-			} else {
-				computeEvents.flip();
-				CL10GL.clEnqueueReleaseGLObjects(commandQueue, glBuffers, computeEvents, null);
+			computeEvents.flip();
+			CL10GL.clEnqueueReleaseGLObjects(commandQueue, glBuffers, computeEvents.hasRemaining() ? computeEvents : null, null);
+
+			// Release OpenCL events to prevent memory leak
+			// Events are reference-counted host memory objects that must be explicitly freed
+			long pointer = acquireEvent.get(0);
+			if (pointer != 0L)
+				clReleaseEvent(pointer);
+
+			for (int i = 0; i < computeEvents.limit(); ++i) {
+				pointer = computeEvents.get(i);
+				if (pointer != 0L)
+					clReleaseEvent(pointer);
 			}
 		}
 	}

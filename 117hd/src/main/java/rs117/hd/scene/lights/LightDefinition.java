@@ -1,6 +1,8 @@
 package rs117.hd.scene.lights;
 
+import com.google.gson.JsonElement;
 import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
 import java.util.HashSet;
 import javax.annotation.Nullable;
 import rs117.hd.scene.GamevalManager;
@@ -13,7 +15,7 @@ public class LightDefinition {
 	public Integer worldX, worldY;
 	public int plane;
 	public Alignment alignment = Alignment.CUSTOM;
-	public int[] offset = new int[3];
+	public float[] offset = new float[3];
 	public int height;
 	public int radius = 300;
 	public float strength = 5;
@@ -27,13 +29,25 @@ public class LightDefinition {
 	public int spawnDelay;
 	public int despawnDelay;
 	public boolean fixedDespawnTime;
+	public boolean despawnWithParent;
 	public boolean visibleFromOtherPlanes;
 	public boolean ignoreActorHiding;
 	public int renderableIndex = -1;
+	public boolean waitForAnimation;
+	public float nightMultiplier = 1;
+	@Nullable
+	@JsonAdapter(LightSchedule.Adapter.class)
+	public LightSchedule schedule;
+	@Nullable
+	@SerializedName("outdoorLighting")
+	private JsonElement outdoorLightingRaw;
+	public transient boolean outdoorLighting;
+	@Nullable
+	public transient int[] outdoorLightingSampleWorldPos;
 
-	@JsonAdapter(AABB.JsonAdapter.class)
+	@JsonAdapter(AABB.ArrayAdapter.class)
 	public AABB[] areas = {};
-	@JsonAdapter(AABB.JsonAdapter.class)
+	@JsonAdapter(AABB.ArrayAdapter.class)
 	public AABB[] excludeAreas = {};
 	@JsonAdapter(GamevalManager.NpcAdapter.class)
 	public HashSet<Integer> npcIds = new HashSet<>();
@@ -49,10 +63,10 @@ public class LightDefinition {
 	public void normalize() {
 		if (description == null)
 			description = "N/A";
-		if (alignment == null || alignment == Alignment.CENTER)
+		if (alignment == null)
 			alignment = Alignment.CUSTOM;
 		if (offset == null || offset.length != 3) {
-			offset = new int[3];
+			offset = new float[3];
 		} else {
 			offset[1] *= -1;
 		}
@@ -60,5 +74,31 @@ public class LightDefinition {
 			color = new float[3];
 		if (type == null)
 			type = LightType.STATIC;
+
+		if (outdoorLightingRaw == null || outdoorLightingRaw.isJsonNull()) {
+			outdoorLightingRaw = null;
+		} else if (outdoorLightingRaw.isJsonPrimitive()) {
+			if (!outdoorLightingRaw.getAsJsonPrimitive().isBoolean())
+				throw new IllegalStateException("outdoorLighting must be a boolean or [ worldX, worldY, plane ]");
+			outdoorLighting = outdoorLightingRaw.getAsBoolean();
+			if (!outdoorLighting)
+				outdoorLightingRaw = null;
+		} else {
+			if (!outdoorLightingRaw.isJsonArray() || outdoorLightingRaw.getAsJsonArray().size() != 3)
+				throw new IllegalStateException("outdoorLighting position must contain three coordinates");
+
+			var sampleWorldPos = outdoorLightingRaw.getAsJsonArray();
+			outdoorLightingSampleWorldPos = new int[3];
+			for (int i = 0; i < outdoorLightingSampleWorldPos.length; i++) {
+				JsonElement coordinate = sampleWorldPos.get(i);
+				if (!coordinate.isJsonPrimitive() || !coordinate.getAsJsonPrimitive().isNumber())
+					throw new IllegalStateException("outdoorLighting position must contain integer coordinates");
+				int value = coordinate.getAsInt();
+				if (value != coordinate.getAsDouble())
+					throw new IllegalStateException("outdoorLighting position must contain integer coordinates");
+				outdoorLightingSampleWorldPos[i] = value;
+			}
+			outdoorLighting = true;
+		}
 	}
 }

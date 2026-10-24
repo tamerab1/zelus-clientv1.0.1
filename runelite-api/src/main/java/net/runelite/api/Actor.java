@@ -39,7 +39,7 @@ import net.runelite.api.coords.WorldPoint;
 /**
  * Represents a RuneScape actor/entity.
  */
-public interface Actor extends Renderable
+public interface Actor extends Renderable, CameraFocusableEntity
 {
 
 	final Pattern TAG_REGEXP = Pattern.compile("<[^>]*>");
@@ -504,4 +504,17 @@ public interface Actor extends Renderable
 	 * @see #isDead()
 	 */
 	void setDead(boolean dead);
+
+	/**
+	 * Get the actor's footprint size
+	 * @return
+	 */
+	int getFootprintSize();
+
+	/**
+	 * Get the height offset of the actor from their current animation
+	 * @return
+	 */
+	@Override
+	int getAnimationHeightOffset();
 }

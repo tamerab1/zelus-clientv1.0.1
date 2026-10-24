@@ -41,6 +41,7 @@ import java.util.function.Function;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -52,6 +53,7 @@ import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
+import net.runelite.api.Player;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
@@ -175,7 +177,14 @@ public class NpcIndicatorsPlugin extends Plugin
 	 * Tagged NPCs that despawned this tick, which need to be verified that
 	 * they actually spawned and didn't just walk into view range.
 	 */
-	private final List<NPC> despawnedNpcsThisTick = new ArrayList<>();
+	private final List<DespawnedNpc> despawnedNpcsThisTick = new ArrayList<>();
+
+	@AllArgsConstructor
+	private static class DespawnedNpc
+	{
+		WorldPoint coord;
+		int index;
+	}
 
 	/**
 	 * World locations of graphics object which indicate that an
@@ -300,6 +309,7 @@ public class NpcIndicatorsPlugin extends Plugin
 			client.createMenuEntry(idx--)
 				.setOption(idMatch ? UNTAG : TAG)
 				.setTarget(event.getTarget())
+				.setWorldViewId(menuEntry.getWorldViewId())
 				.setIdentifier(event.getIdentifier())
 				.setType(MenuAction.RUNELITE)
 				.onClick(this::tag);
@@ -310,6 +320,7 @@ public class NpcIndicatorsPlugin extends Plugin
 				client.createMenuEntry(idx--)
 					.setOption(nameMatch ? UNTAG_ALL : TAG_ALL)
 					.setTarget(event.getTarget())
+					.setWorldViewId(menuEntry.getWorldViewId())
 					.setIdentifier(event.getIdentifier())
 					.setType(MenuAction.RUNELITE)
 					.onClick(this::tag);
@@ -497,10 +508,14 @@ public class NpcIndicatorsPlugin extends Plugin
 
 	private void tag(MenuEntry entry)
 	{
-		final int id = entry.getIdentifier();
-		WorldView wv = client.getTopLevelWorldView();
-		final NPC npc = wv.npcs().byIndex(id);
+		WorldView wv = client.getWorldView(entry.getWorldViewId());
+		if (wv == null)
+		{
+			return;
+		}
 
+		final int id = entry.getIdentifier();
+		final NPC npc = wv.npcs().byIndex(id);
 		if (npc == null || npc.getName() == null)
 		{
 			return;
@@ -508,10 +523,11 @@ public class NpcIndicatorsPlugin extends Plugin
 
 		if (entry.getOption().equals(TAG) || entry.getOption().equals(UNTAG))
 		{
-			final boolean removed = npcTags.remove(id);
+			final boolean exists = highlightedNpcs.containsKey(npc);
 
-			if (removed)
+			if (exists)
 			{
+				npcTags.remove(id);
 				if (!highlightMatchesNPCName(npc.getName()))
 				{
 					highlightedNpcs.remove(npc);
@@ -582,7 +598,7 @@ public class NpcIndicatorsPlugin extends Plugin
 
 		if (memorizedNpcs.containsKey(npc.getIndex()))
 		{
-			despawnedNpcsThisTick.add(npc);
+			despawnedNpcsThisTick.add(new DespawnedNpc(npc.getWorldLocation(), npc.getIndex()));
 		}
 
 		highlightedNpcs.remove(npc);
@@ -625,7 +641,11 @@ public class NpcIndicatorsPlugin extends Plugin
 		removeOldHighlightedRespawns();
 		validateSpawnedNpcs();
 		lastTickUpdate = Instant.now();
-		lastPlayerLocation = client.getLocalPlayer().getWorldLocation();
+		Player local = client.getLocalPlayer();
+		if (local != null)
+		{
+			lastPlayerLocation = local.getWorldLocation();
+		}
 	}
 
 	private static boolean isInViewRange(WorldPoint wp1, WorldPoint wp2)
@@ -712,7 +732,14 @@ public class NpcIndicatorsPlugin extends Plugin
 			return;
 		}
 
-		for (NPC npc : client.getNpcs())
+		rebuildWorldview(client.getTopLevelWorldView());
+
+		npcOverlayService.rebuild();
+	}
+
+	private void rebuildWorldview(WorldView wv)
+	{
+		for (NPC npc : wv.npcs())
 		{
 			final String npcName = npc.getName();
 
@@ -729,7 +756,7 @@ public class NpcIndicatorsPlugin extends Plugin
 
 			if (highlightMatchesNPCName(npcName))
 			{
-				if (!client.isInInstancedRegion())
+				if (!wv.isInstance())
 				{
 					memorizeNpc(npc);
 				}
@@ -741,7 +768,10 @@ public class NpcIndicatorsPlugin extends Plugin
 			memorizedNpcs.remove(npc.getIndex());
 		}
 
-		npcOverlayService.rebuild();
+		for (WorldView sub : wv.worldViews())
+		{
+			rebuildWorldview(sub);
+		}
 	}
 
 	private boolean highlightMatchesNPCName(String npcName)
@@ -765,20 +795,20 @@ public class NpcIndicatorsPlugin extends Plugin
 		}
 		else
 		{
-			for (NPC npc : despawnedNpcsThisTick)
+			for (DespawnedNpc npc : despawnedNpcsThisTick)
 			{
 				if (!teleportGraphicsObjectSpawnedThisTick.isEmpty())
 				{
-					if (teleportGraphicsObjectSpawnedThisTick.contains(npc.getWorldLocation()))
+					if (teleportGraphicsObjectSpawnedThisTick.contains(npc.coord))
 					{
 						// NPC teleported away, so we don't want to add the respawn timer
 						continue;
 					}
 				}
 
-				if (isInViewRange(client.getLocalPlayer().getWorldLocation(), npc.getWorldLocation()))
+				if (isInViewRange(client.getLocalPlayer().getWorldLocation(), npc.coord))
 				{
-					final MemorizedNpc mn = memorizedNpcs.get(npc.getIndex());
+					final MemorizedNpc mn = memorizedNpcs.get(npc.index);
 
 					if (mn != null)
 					{

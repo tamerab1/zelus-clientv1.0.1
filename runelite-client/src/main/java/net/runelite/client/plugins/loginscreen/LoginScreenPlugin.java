@@ -45,7 +45,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.Constants;
 import net.runelite.api.GameState;
 import net.runelite.api.SpritePixels;
 import net.runelite.api.widgets.Widget;
@@ -388,11 +387,6 @@ public class LoginScreenPlugin extends Plugin implements KeyListener
 						image = ImageIO.read(CUSTOM_LOGIN_SCREEN_FILE);
 					}
 
-					if (image.getHeight() > Constants.GAME_FIXED_HEIGHT)
-					{
-						final double scalar = Constants.GAME_FIXED_HEIGHT / (double) image.getHeight();
-						image = ImageUtil.resizeImage(image, (int) (image.getWidth() * scalar), Constants.GAME_FIXED_HEIGHT);
-					}
 					SpritePixels pixels = ImageUtil.getImageSpritePixels(image, client);
 					client.setLoginScreen(pixels);
 				}

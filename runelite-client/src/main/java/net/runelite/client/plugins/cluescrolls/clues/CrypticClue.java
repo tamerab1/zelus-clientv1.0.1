@@ -241,7 +241,7 @@ public class CrypticClue extends ClueScroll implements NpcClueScroll, ObjectClue
 			.build(),
 		CrypticClue.builder()
 			.itemId(ItemID.TRAIL_CLUE_EASY_VAGUE020)
-			.text("Search the crate near a cart in Port Khazard.")
+			.text("Search the crate near the southern general store in Port Khazard.")
 			.location(new WorldPoint(2660, 3149, 0))
 			.objectId(ObjectID.CRATE)
 			.solution("Search by the southern Khazard General Store in Port Khazard.")
@@ -1206,7 +1206,7 @@ public class CrypticClue extends ClueScroll implements NpcClueScroll, ObjectClue
 			.text("Robin wishes to see your finest ranged equipment.")
 			.location(new WorldPoint(3673, 3492, 0))
 			.npc("Robin")
-			.solution("Robin at the inn in Port Phasmatys. Speak to him with +181 in ranged attack bonus. Bonus granted by the toxic blowpipe is ignored.")
+			.solution("Robin at the inn in Port Phasmatys. Speak to him with +180 in ranged attack bonus. Bonus granted by the toxic blowpipe is ignored.")
 			.build(),
 		CrypticClue.builder()
 			.itemId(ItemID.TRAIL_CLUE_HARD_RIDDLE001)
@@ -1401,7 +1401,7 @@ public class CrypticClue extends ClueScroll implements NpcClueScroll, ObjectClue
 			.itemId(ItemID.TRAIL_CLUE_MASTER)
 			.text("The far north eastern corner where 1 of 4 was defeated, the shadows still linger.")
 			.location(new WorldPoint(2744, 5116, 0))
-			.solution("Dig on the northeastern-most corner of the Shadow Dungeon. Bring a ring of visibility.")
+			.solution("Dig on the northeastern-most corner of the Shadow Dungeon. Bring a ring of visibility or ring of shadows.")
 			.build(),
 		CrypticClue.builder()
 			.itemId(ItemID.TRAIL_CLUE_EASY_VAGUE027)
@@ -1577,8 +1577,8 @@ public class CrypticClue extends ClueScroll implements NpcClueScroll, ObjectClue
 			.itemId(ItemID.TRAIL_CLUE_MASTER)
 			.text("The doorman of the Warriors' Guild wishes to be impressed by how strong your equipment is.")
 			.location(new WorldPoint(2878, 3546, 0))
-			.npc("Ghommal")
-			.solution("Speak to the doorman of the Warriors' Guild with a total Melee Strength bonus of over 100.")
+			.npcProvider(CrypticClue::getWarriorsGuildDoorman)
+			.solutionProvider((plugin) -> "Speak to " +  getWarriorsGuildDoorman(plugin) + " with a total Melee Strength bonus of over 100.")
 			.build(),
 		CrypticClue.builder()
 			.itemId(ItemID.TRAIL_CLUE_MASTER)
@@ -1900,7 +1900,7 @@ public class CrypticClue extends ClueScroll implements NpcClueScroll, ObjectClue
 			.text("A general who sets a 'shining' example.")
 			.location(new WorldPoint(2186, 3148, 0))
 			.npc("General Hining")
-			.solution("Talk to General Hining in Tyras Camp.")
+			.solution("Talk to General Hining in Tyras Camp. Fairy ring BJS (with 76 agility).")
 			.build(),
 		CrypticClue.builder()
 			.itemId(ItemID.TRAIL_ELITE_RIDDLE_EXP1)
@@ -1985,7 +1985,7 @@ public class CrypticClue extends ClueScroll implements NpcClueScroll, ObjectClue
 		CrypticClue.builder()
 			.itemId(ItemID.TRAIL_ELITE_RIDDLE_VM01)
 			.text("With drinks and dwarves I make my way, upon my head a glass will stay.")
-			.location(new WorldPoint(1432, 9584, 0))
+			.location(new WorldPoint(1432, 9584, 1))
 			.npc("Funbo")
 			.solution("Speak to Funbo inside Cam Torum's pub.")
 			.build(),
@@ -2006,6 +2006,39 @@ public class CrypticClue extends ClueScroll implements NpcClueScroll, ObjectClue
 			.text("Dig outside the bank on Aldarin.")
 			.location(new WorldPoint(1390, 2926, 0))
 			.solution("Dig outside the bank on Aldarin. Fairy ring CKQ.")
+			.build(),
+		CrypticClue.builder()
+			.itemId(ItemID.TRAIL_EASY_VAGUE_VM3)
+			.text("He's been studying unusual tree migrations.")
+			.npc("Ranulph")
+			.location(new WorldPoint(1367, 3367, 0))
+			.solution("Talk to Ranulph in Auburnvale.")
+			.build(),
+		CrypticClue.builder()
+			.itemId(ItemID.TRAIL_ELITE_RIDDLE_VM03)
+			.text("Crush the spirited earth.")
+			.npc("Earthen Nagua")
+			.solution("Kill an earthen nagua.")
+			.build(),
+		CrypticClue.builder()
+			.itemId(ItemID.TRAIL_CLUE_MEDIUM_RIDDLE_VM02)
+			.text("Search the crate abandoned in the shadow of a mountain's grace.")
+			.location(new WorldPoint(1388, 3216, 0))
+			.objectId(ObjectID.TLATI_CRATE_01_DARK_CLUE)
+			.solution("Search the crate south of the Auburn Forest.")
+			.build(),
+		CrypticClue.builder()
+			.itemId(ItemID.TRAIL_ELITE_RIDDLE_SAIL)
+			.text("Their bane awaits, but don't be going in there without permission.")
+			.location(new WorldPoint(3176, 2478, 0))
+			.npc("Shellbane gryphon")
+			.solution("Kill the shellbane gryphon.")
+			.build(),
+		CrypticClue.builder()
+			.itemId(ItemID.TRAIL_HARD_RIDDLE_SAIL)
+			.text("I sit on the beach and cry for those that have passed on.")
+			.location(new WorldPoint(2324, 2772, 0))
+			.solution("Dig on the beach of the Tear of the Soul")
 			.build()
 	);
 
@@ -2289,5 +2322,10 @@ public class CrypticClue extends ClueScroll implements NpcClueScroll, ObjectClue
 	private static String getBurthorpeSlayerMaster(ClueScrollPlugin plugin)
 	{
 		return plugin.getClient().getVarbitValue(VarbitID.WGS_HERO_PART_1_VIS) == 0 ? "Turael" : "Aya";
+	}
+
+	private static String getWarriorsGuildDoorman(ClueScrollPlugin plugin)
+	{
+		return plugin.getClient().getVarbitValue(VarbitID.WGS_HERO_PART_1_VIS) == 0 ? "Ghommal" : "Laidee Gnonock";
 	}
 }

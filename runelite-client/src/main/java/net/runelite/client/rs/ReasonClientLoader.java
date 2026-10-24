@@ -46,7 +46,6 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import javax.annotation.Nonnull;
-import java.applet.Applet;
 import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -109,7 +108,7 @@ public class ReasonClientLoader implements Supplier<Client> {
 	}
 
 	private Object doLoad() {
-		Applet rs = null;
+		Client rs = null;
 		try {
 			SplashScreen.stage(.40, null, "Loading client");
 
@@ -193,12 +192,13 @@ public class ReasonClientLoader implements Supplier<Client> {
 		}
 	}
 
-	private Applet loadClient(RSConfig config, ClassLoader classLoader)
+	private Client loadClient(RSConfig config, ClassLoader classLoader)
 			throws ClassNotFoundException, IllegalAccessException, Exception {
 		String initialClass = config.getInitialClass();
 		Class<?> clientClass = classLoader.loadClass(initialClass);
-		Applet rs = (Applet) clientClass.newInstance();
-		rs.setStub(new RSAppletStub(config, runtimeConfigLoader));
+		// RuneLite 1.13: the client is no longer an Applet; it takes a ClientConfiguration instead.
+		Client rs = (Client) clientClass.newInstance();
+		rs.setConfiguration(new RSAppletStub(config, runtimeConfigLoader));
 		return rs;
 	}
 

@@ -1,0 +1,211 @@
+{
+  "_comment": [
+    "Zelus custom 117HD materials, ported from the old Material enum (117HD v1.5 era) on the rev 241 branch.",
+    "NOT loaded by 117HD. These texture ids collide with vanilla rev 241 textures, so the entries are added",
+    "to src/main/resources/rs117/hd/scene/materials.json by the rev 241 id-remap step, once each custom",
+    "texture has its new id. 'template' = copy every setting from that vanilla material (name and",
+    "vanillaTextureIndex replaced); null = plain entry ({name, vanillaTextureIndex}) like RED_LAVA."
+  ],
+  "materials": [
+    {
+      "name": "GLACIAL_CAPE",
+      "rev231TextureId": 154,
+      "template": "INFERNAL_CAPE"
+    },
+    {
+      "name": "COSMIC_CAPE",
+      "rev231TextureId": 155,
+      "template": "INFERNAL_CAPE"
+    },
+    {
+      "name": "VOID_CAPE",
+      "rev231TextureId": 156,
+      "template": "INFERNAL_CAPE"
+    },
+    {
+      "name": "GLACIAL_FIRE_CAPE",
+      "rev231TextureId": 208,
+      "template": "FIRE_CAPE"
+    },
+    {
+      "name": "UMBRAL_FIRE_CAPE",
+      "rev231TextureId": 209,
+      "template": "FIRE_CAPE"
+    },
+    {
+      "name": "VENOMOUS_FIRE_CAPE",
+      "rev231TextureId": 207,
+      "template": "FIRE_CAPE"
+    },
+    {
+      "name": "FROSTBRAND",
+      "rev231TextureId": 157,
+      "template": null
+    },
+    {
+      "name": "SOULFIRE",
+      "rev231TextureId": 158,
+      "template": null
+    },
+    {
+      "name": "VOIDREND",
+      "rev231TextureId": 159,
+      "template": null
+    },
+    {
+      "name": "EMBERFORGED",
+      "rev231TextureId": 160,
+      "template": null
+    },
+    {
+      "name": "PRISMATIC",
+      "rev231TextureId": 161,
+      "template": null
+    },
+    {
+      "name": "FESTIVE",
+      "rev231TextureId": 162,
+      "template": null
+    },
+    {
+      "name": "NIGHTWEAVER",
+      "rev231TextureId": 163,
+      "template": null
+    },
+    {
+      "name": "KINGSGUARD",
+      "rev231TextureId": 164,
+      "template": null
+    },
+    {
+      "name": "WILDFANG",
+      "rev231TextureId": 165,
+      "template": null
+    },
+    {
+      "name": "FORSAKEN",
+      "rev231TextureId": 166,
+      "template": null
+    },
+    {
+      "name": "BROODMOTHER",
+      "rev231TextureId": 167,
+      "template": null
+    },
+    {
+      "name": "GRIZZLEMAW",
+      "rev231TextureId": 168,
+      "template": null
+    },
+    {
+      "name": "SKYHUNTER",
+      "rev231TextureId": 169,
+      "template": null
+    },
+    {
+      "name": "GLACIUS",
+      "rev231TextureId": 170,
+      "template": null
+    },
+    {
+      "name": "SOLARFLARE",
+      "rev231TextureId": 171,
+      "template": null
+    },
+    {
+      "name": "WILDSTALKER",
+      "rev231TextureId": 172,
+      "template": null
+    },
+    {
+      "name": "MAGMACORE",
+      "rev231TextureId": 173,
+      "template": null
+    },
+    {
+      "name": "STARHEART",
+      "rev231TextureId": 174,
+      "template": null
+    },
+    {
+      "name": "GALAXY_PARTYHAT",
+      "rev231TextureId": 175,
+      "template": null
+    },
+    {
+      "name": "TOXIC_PARTYHAT",
+      "rev231TextureId": 176,
+      "template": null
+    },
+    {
+      "name": "INFERNO_PARTYHAT",
+      "rev231TextureId": 177,
+      "template": null
+    },
+    {
+      "name": "FROSTBITE_PARTYHAT",
+      "rev231TextureId": 178,
+      "template": null
+    },
+    {
+      "name": "AURORA_SANTA",
+      "rev231TextureId": 179,
+      "template": null
+    },
+    {
+      "name": "MIDNIGHT_SANTA",
+      "rev231TextureId": 180,
+      "template": null
+    },
+    {
+      "name": "CANDY_CANE_SANTA",
+      "rev231TextureId": 181,
+      "template": null
+    },
+    {
+      "name": "GOLDEN_SANTA",
+      "rev231TextureId": 182,
+      "template": null
+    },
+    {
+      "name": "SERAPHIC_AGGY",
+      "rev231TextureId": 183,
+      "template": null
+    },
+    {
+      "name": "BLOOMFIRE_SPROUT",
+      "rev231TextureId": 184,
+      "template": null
+    },
+    {
+      "name": "EMBERSCALE_DRACO",
+      "rev231TextureId": 185,
+      "template": null
+    },
+    {
+      "name": "COSMIC_FLOW",
+      "rev231TextureId": 186,
+      "template": null
+    },
+    {
+      "name": "ELECTRIC_FLOW",
+      "rev231TextureId": 187,
+      "template": null
+    },
+    {
+      "name": "INFERNAL_FURY",
+      "rev231TextureId": 195,
+      "template": null
+    },
+    {
+      "name": "COSMIC_CHAMPION",
+      "rev231TextureId": 196,
+      "template": null
+    },
+    {
+      "name": "BOXING_CHEST_FLOW",
+      "rev231TextureId": 197,
+      "template": null
+    }
+  ]
+}

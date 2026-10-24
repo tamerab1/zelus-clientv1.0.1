@@ -228,6 +228,22 @@ public enum Quest
 	MEAT_AND_GREET(3712, "Meat and Greet"),
 	ETHICALLY_ACQUIRED_ANTIQUITIES(3713, "Ethically Acquired Antiquities"),
 	THE_CURSE_OF_ARRAV(3937, "The Curse of Arrav"),
+	THE_FINAL_DAWN(5189, "The Final Dawn"),
+	SHADOWS_OF_CUSTODIA(5190, "Shadows of Custodia"),
+	SCRAMBLED(5191, "Scrambled!"),
+	VALE_TOTEMS(5194, "Vale Totems"),
+	PANDEMONIUM(7103, "Pandemonium"),
+	PRYING_TIMES(7104, "Prying Times"),
+	CURRENT_AFFAIRS(7105, "Current Affairs"),
+	TROUBLED_TORTUGANS(7106, "Troubled Tortugans"),
+	THE_RED_REEF(7107, "The Red Reef"),
+	FALLEN_FROM_GRACE(7133, "Fallen From Grace"),
+	LEARNING_THE_ROPES(9643, "Learning the Ropes"),
+	THE_IDES_OF_MILK(9645, "The Ides of Milk"),
+	THE_BLOOD_MOON_RISES(16414, "The Blood Moon Rises"),
+	A_RUFF_SITUATION(16971, "A Ruff Situation"),
+	CRAB_QUEST(16972, "Crab Quest"),
+	THE_FRACTURED_ARCHIVE(17027, "The Fractured Archive"),
 	;
 
 	@Getter

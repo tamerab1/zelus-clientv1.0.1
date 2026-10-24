@@ -1,28 +1,40 @@
 #pragma once
 
-// Needs to match GlobalUniforms.java
-layout(std140) uniform GlobalUniforms {
-    vec3 cameraPos;
+#include <utils/constants.glsl>
+#include <utils/color_utils.glsl>
+
+#define RED linearToSrgb(uboGlobal.colorPicker.r)
+#define GREEN linearToSrgb(uboGlobal.colorPicker.g)
+#define BLUE linearToSrgb(uboGlobal.colorPicker.b)
+#define OPACITY uboGlobal.colorPicker.a
+
+layout(std140) uniform UBOGlobal {
+    vec4 colorPicker;
+
+    bool orthographicProjection;
+
     int expandedMapLoadingChunks;
     float drawDistance;
-    float elapsedTime;
 
     float colorBlindnessIntensity;
+    float glareIntensity;
     float gammaCorrection;
     float saturation;
 	float contrast;
+    int colorFilterPrevious;
+    int colorFilter;
+    float colorFilterFade;
+
+    ivec2 viewportSize;
+    ivec2 sceneResolution;
+    ivec2 tiledLightingResolution;
 
     vec3 ambientColor;
     float ambientStrength;
-
     vec3 lightColor;
     float lightStrength;
-
     vec3 underglowColor;
     float underglowStrength;
-
-    mat4 projectionMatrix;
-    mat4 lightProjectionMatrix;
 
     int useFog;
     float fogDepth;
@@ -31,23 +43,31 @@ layout(std140) uniform GlobalUniforms {
     float groundFogEnd;
     float groundFogOpacity;
 
-    int pointLightsCount;
-    float lightningBrightness;
-    vec3 lightDir;
-
-    float shadowMaxBias;
-    int shadowsEnabled;
-
     vec3 waterColorLight;
     vec3 waterColorMid;
     vec3 waterColorDark;
+
+    ivec2 sceneBase;
 
     bool underwaterEnvironment;
     bool underwaterCaustics;
     vec3 underwaterCausticsColor;
     float underwaterCausticsStrength;
 
-    int colorFilterPrevious;
-    int colorFilter;
-    float colorFilterFade;
-};
+    vec3 lightDir;
+
+    int pointLightsCount;
+
+    vec3 cameraPos;
+    mat4 viewMatrix;
+    mat4 projectionMatrix;
+    mat4 invProjectionMatrix;
+    mat4 lightProjectionMatrix;
+    mat4 invLightProjectionMatrix;
+    float shadowBiasScale;
+    float shadowDrawDistance;
+    bool castsShadows;
+
+    float lightningBrightness;
+    float elapsedTime;
+} uboGlobal;
