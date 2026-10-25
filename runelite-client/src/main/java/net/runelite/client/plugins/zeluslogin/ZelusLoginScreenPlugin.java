@@ -92,7 +92,14 @@ public class ZelusLoginScreenPlugin extends Plugin
 			{
 				throw new IllegalStateException("login state did not change (" + client.getLoginIndex() + ")");
 			}
-			log.info("Zelus login screen: skipped login state {} to the username/password box", state);
+			// the client's own welcome -> login transition fills the remembered username; skipping it means doing that here
+			String remembered = client.getPreferences().getRememberedUsername();
+			if (remembered != null && !remembered.isEmpty() && (client.getUsername() == null || client.getUsername().isEmpty()))
+			{
+				client.setUsername(remembered);
+			}
+			log.info("Zelus login screen: skipped login state {} to the username/password box (remembered username: {})",
+				state, remembered == null || remembered.isEmpty() ? "none" : "set");
 		}
 		catch (ReflectiveOperationException | RuntimeException e)
 		{
