@@ -1,24 +1,27 @@
 package net.runelite.client.plugins.zeluslogin;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.events.ClientTick;
-import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
 /**
- * Rev 241's login screen opens on Jagex's "Upgrade to a Jagex Account" panel (login state 38: "Switch to a
- * Jagex Account for improved security", Download Launcher / Login) and its buttons send you to Jagex's web
- * authorisation. Zelus logins are username/password, so whenever the login screen enters state 38 it is moved
- * to state 2, the standard username/password box.
+ * Rev 241's title screen opens on Jagex's "Upgrade to a Jagex Account" panel ("Switch to a Jagex Account for improved
+ * security", Download Launcher / Login), whose buttons go to Jagex's web authorisation. Zelus logins are
+ * username/password, so the login screen is moved straight to state 2, the username/password box, whenever it sits
+ * on that panel: state 0 (where the client starts and returns to after a logout) or 38.
  * <p>
- * The API has no setter for the login state: it is the obfuscated static {@code ar.cq}, read by
- * {@link Client#getLoginIndex()} as {@code cq * -1568212415}. Those names are tied to this injected client
- * (rev 241); if they don't resolve, the plugin logs once and does nothing.
+ * The client tick isn't posted on the title screen, so this polls on a timer and switches on the client thread. The
+ * API has no setter for the login state: it is the obfuscated static {@code ar.cq}, read by
+ * {@link Client#getLoginIndex()} as {@code cq * -1568212415}. Those names belong to this injected client (rev 241);
+ * if they don't resolve, the plugin logs once and does nothing.
  */
 @Slf4j
 @PluginDescriptor(
@@ -29,6 +32,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 )
 public class ZelusLoginScreenPlugin extends Plugin
 {
+	private static final int LOGIN_STATE_WELCOME = 0;
 	private static final int LOGIN_STATE_JAGEX_ACCOUNT_UPGRADE = 38;
 	private static final int LOGIN_STATE_USERNAME_PASSWORD = 2;
 	private static final String LOGIN_STATE_CLASS = "ar";
@@ -38,14 +42,40 @@ public class ZelusLoginScreenPlugin extends Plugin
 	@Inject
 	private Client client;
 
-	private Field loginState;
-	private boolean unavailable;
+	@Inject
+	private ClientThread clientThread;
 
-	@Subscribe
-	public void onClientTick(ClientTick tick)
+	@Inject
+	private ScheduledExecutorService executor;
+
+	private ScheduledFuture<?> poll;
+	private Field loginState;
+	private volatile boolean unavailable;
+
+	@Override
+	protected void startUp()
 	{
-		if (unavailable || client.getGameState() != GameState.LOGIN_SCREEN
-			|| client.getLoginIndex() != LOGIN_STATE_JAGEX_ACCOUNT_UPGRADE)
+		poll = executor.scheduleWithFixedDelay(() -> clientThread.invoke(this::skipUpgradePanel), 100, 100, TimeUnit.MILLISECONDS);
+	}
+
+	@Override
+	protected void shutDown()
+	{
+		if (poll != null)
+		{
+			poll.cancel(false);
+			poll = null;
+		}
+	}
+
+	private void skipUpgradePanel()
+	{
+		if (unavailable || client.getGameState() != GameState.LOGIN_SCREEN)
+		{
+			return;
+		}
+		int state = client.getLoginIndex();
+		if (state != LOGIN_STATE_WELCOME && state != LOGIN_STATE_JAGEX_ACCOUNT_UPGRADE)
 		{
 			return;
 		}
@@ -62,6 +92,7 @@ public class ZelusLoginScreenPlugin extends Plugin
 			{
 				throw new IllegalStateException("login state did not change (" + client.getLoginIndex() + ")");
 			}
+			log.info("Zelus login screen: skipped login state {} to the username/password box", state);
 		}
 		catch (ReflectiveOperationException | RuntimeException e)
 		{
