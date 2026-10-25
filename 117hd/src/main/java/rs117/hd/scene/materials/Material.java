@@ -200,6 +200,12 @@ public class Material {
 			   | (isOverlay ? 1 : 0);
 	}
 
+	private static int packLayers(int low, int high) {
+		if (low < Short.MIN_VALUE || low > Short.MAX_VALUE || high < Short.MIN_VALUE || high > Short.MAX_VALUE)
+			throw new IllegalStateException("texture layer out of 16-bit range: " + low + ", " + high);
+		return (low & 0xFFFF) | (high << 16);
+	}
+
 	public void fillMaterialStruct(
 		UBOMaterials.MaterialStruct struct,
 		float vanillaScrollX,
@@ -208,13 +214,13 @@ public class Material {
 		float scrollSpeedX = scrollSpeed[0] + vanillaScrollX;
 		float scrollSpeedY = scrollSpeed[1] + vanillaScrollY;
 
-		struct.colorMap.set(textureLayer);
-		struct.normalMap.set(getTextureLayer(normalMap));
-		struct.displacementMap.set(getTextureLayer(displacementMap));
-		struct.roughnessMap.set(getTextureLayer(roughnessMap));
-		struct.ambientOcclusionMap.set(getTextureLayer(ambientOcclusionMap));
-		struct.flowMap.set(getTextureLayer(flowMap));
-		struct.shadowAlphaMap.set(getTextureLayer(shadowAlphaMap));
+		// packed as signed 16-bit pairs, see UBOMaterials.MaterialStruct.maps
+		struct.maps.set(
+			packLayers(textureLayer, getTextureLayer(normalMap)),
+			packLayers(getTextureLayer(displacementMap), getTextureLayer(roughnessMap)),
+			packLayers(getTextureLayer(ambientOcclusionMap), getTextureLayer(flowMap)),
+			packLayers(getTextureLayer(shadowAlphaMap), -1)
+		);
 		struct.flags.set(
 			(overrideBaseColor ? 1 : 0) << 2 |
 			(unlit ? 1 : 0) << 1 |

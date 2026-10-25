@@ -944,6 +944,12 @@ public class HdPlugin extends Plugin {
 	}
 
 	public String generateGetter(String type, String array, int arrayLength) {
+		return generateGetter(type, array, arrayLength, null);
+	}
+
+	/** {@code wrap}: a function applied to the fetched element (e.g. an unpacker), or null */
+	public String generateGetter(String type, String array, int arrayLength, String wrap) {
+		String open = wrap == null ? "" : wrap + "(", close = wrap == null ? "" : ")";
 		StringBuilder include = new StringBuilder();
 
 		if (config.macosIntelWorkaround() && !APPLE_ARM) {
@@ -955,15 +961,20 @@ public class HdPlugin extends Plugin {
 				.append("get")
 				.append(type)
 				.append("(int i) { return ")
+				.append(open)
 				.append(generateFetchCases(array, 0, arrayLength))
+				.append(close)
 				.append("; }\n");
 		} else {
 			include
 				.append("#define get")
 				.append(type)
 				.append("(i) ")
+				.append(open)
 				.append(array)
-				.append("[i]\n");
+				.append("[i]")
+				.append(close)
+				.append("\n");
 		}
 
 		return include.toString();
@@ -1031,7 +1042,8 @@ public class HdPlugin extends Plugin {
 			)
 			.addInclude(
 				"MATERIAL_GETTER",
-				() -> generateGetter("Material", "uboMaterials.Array", MaterialManager.MATERIALS.length)
+				// Zelus: materials are stored packed; the getter unpacks (materials.glsl unpackMaterial)
+				() -> generateGetter("Material", "uboMaterials.Array", MaterialManager.MATERIALS.length, "unpackMaterial")
 			)
 			.addInclude(
 				"WATER_TYPE_GETTER",

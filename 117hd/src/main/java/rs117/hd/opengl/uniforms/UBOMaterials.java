@@ -12,13 +12,12 @@ import static rs117.hd.utils.MathUtils.*;
 @Slf4j
 public class UBOMaterials extends UniformBuffer<GLBuffer> {
 	public static class MaterialStruct extends StructProperty {
-		public Property colorMap = addProperty(PropertyType.Int, "colorMap");
-		public Property normalMap = addProperty(PropertyType.Int, "normalMap");
-		public Property displacementMap = addProperty(PropertyType.Int, "displacementMap");
-		public Property roughnessMap = addProperty(PropertyType.Int, "roughnessMap");
-		public Property ambientOcclusionMap = addProperty(PropertyType.Int, "ambientOcclusionMap");
-		public Property flowMap = addProperty(PropertyType.Int, "flowMap");
-		public Property shadowAlphaMap = addProperty(PropertyType.Int, "shadowAlphaMap");
+		// Zelus: the seven texture layer indices are packed as signed 16-bit pairs (low | high << 16) into one
+		// ivec4 -- color|normal, displacement|roughness, ambientOcclusion|flow, shadowAlpha|unused -- and
+		// unpacked by unpackMaterial() in materials.glsl. That makes a material 80 bytes instead of 96: with the
+		// rev 241 cache's textures (one auto material per texture without a material) the old layout came to
+		// ~73 KB, over the 64 KB uniform block limit, and the scene shaders failed to link.
+		public Property maps = addProperty(PropertyType.IVec4, "maps");
 		public Property flags = addProperty(PropertyType.Int, "flags");
 		public Property subsurface = addProperty(PropertyType.Float, "subsurface");
 		public Property brightness = addProperty(PropertyType.Float, "brightness");
