@@ -55,6 +55,12 @@ public class JagexAuthPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		// Zelus: logins don't use Jagex Accounts, so the "Jagex Accounts" sidebar panel is not added
+		if (true)
+		{
+			return;
+		}
+
 		JagexAuthPanel panel = injector.getInstance(JagexAuthPanel.class);
 
 		navButton = NavigationButton.builder()
@@ -73,6 +79,9 @@ public class JagexAuthPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
-		clientToolbar.removeNavigation(navButton);
+		if (navButton != null)
+		{
+			clientToolbar.removeNavigation(navButton);
+		}
 	}
 }
