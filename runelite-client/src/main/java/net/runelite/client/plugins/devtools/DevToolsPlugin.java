@@ -330,7 +330,7 @@ public class DevToolsPlugin extends Plugin
 	// launch-flag check is commented out there), so without this check
 	// every player -- not just staff -- gets this panel and its client-side
 	// stat/appearance spoofing commands.
-	private static final int OWNER_CLIENT_FLAG_VARP = 29999;
+	private static final int OWNER_CLIENT_FLAG_VARP = 8000; // the server's VarPlayerRepository.OWNER_CLIENT_FLAG; the 241 client holds varps 0-8340 only
 
 	private boolean isOwner()
 	{
