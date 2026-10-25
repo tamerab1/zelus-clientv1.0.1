@@ -32,24 +32,24 @@ public class AnimatedItemIconsPlugin extends Plugin
 	// Items whose models use animated textures (Judicator set, texture test items, textured items).
 	private static final Set<Integer> ANIMATED_ITEMS = Set.of(
 		59552, 59553, 59554, 59555, 59556, 59557,
-		31606, 31608, 31610, 31612,
-		31614, 31616, 31618, 31620, 31622, 31624,
-		31428,
+		42406, 42408, 42410, 42412,
+		42414, 42416, 42418, 42420, 42422, 42424,
+		42228,
 		// Round 4: textured upgrades, partyhats/santa hats, pets
-		31626, 31628, 31630, 31632, 31634, 31636, 31638, 31640, 31642, 31644,
-		31646, 31648, 31650, 31652, 31654, 31656, 31658, 31660, 31662, 31664,
-		31666, 31668, 31670, 31672, 31674, 31676, 31678, 31680, 31682, 31684,
-		31686, 31688, 31690, 31692, 31694, 31696, 31698, 31700, 31702, 31704,
-		31706, 31708,
-		31712, 31718, 31724, 31730, 31736, 31742, // tier 2 combat pets (electric texture 187)
-		31714, 31720, 31726, 31732, 31738, 31744, // tier 3 combat pets (cosmic texture 186)
-		31746, // Ascended Bestiary
-		31748, // Astral Spore
-		31816, // Combat Pet Shard
-		31818, // Nightfall bow (celestial), texture 235
-		31754, // Infernal Fury Gloves (boxing T4, lava texture 195)
-		31756, // Cosmic Champion Gloves (boxing T5, cosmic blend texture 196)
-		31758, // Boxing Mystery Chest (royal flow texture 197)
+		42426, 42428, 42430, 42432, 42434, 42436, 42438, 42440, 42442, 42444,
+		42446, 42448, 42450, 42452, 42454, 42456, 42458, 42460, 42462, 42464,
+		42466, 42468, 42470, 42472, 42474, 42476, 42478, 42480, 42482, 42484,
+		42486, 42488, 42490, 42492, 42494, 42496, 42498, 42500, 42502, 42504,
+		42506, 42508,
+		42512, 42518, 42524, 42530, 42536, 42542, // tier 2 combat pets (electric texture 445)
+		42514, 42520, 42526, 42532, 42538, 42544, // tier 3 combat pets (cosmic texture 444)
+		42546, // Ascended Bestiary
+		42548, // Astral Spore
+		42616, // Combat Pet Shard
+		42618, // Nightfall bow (celestial), texture 235
+		42554, // Infernal Fury Gloves (boxing T4, lava texture 453)
+		42556, // Cosmic Champion Gloves (boxing T5, cosmic blend texture 454)
+		42558, // Boxing Mystery Chest (royal flow texture 455)
 		59551 // Infernal Wings (lava texture 59)
 	);
 

@@ -29,7 +29,7 @@ import net.runelite.client.util.Text;
 )
 public class CombatPetTimerPlugin extends Plugin
 {
-	private static final int BESTIARY_ITEM = 31746;
+	private static final int BESTIARY_ITEM = 42546;
 	private static final Pattern START = Pattern.compile("\\[Bestiary\\] Your (.+?) answers the call for (\\d+) seconds");
 
 	@Inject

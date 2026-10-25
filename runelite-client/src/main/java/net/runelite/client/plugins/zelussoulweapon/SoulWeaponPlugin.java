@@ -48,7 +48,7 @@ import net.runelite.client.util.Text;
 public class SoulWeaponPlugin extends Plugin
 {
 	/** The nine Soulbound looks: 31824..31840, even ids (blade, recurve, spire x base / Empowered / Ascended). */
-	private static final int FIRST_LOOK = 31824, LAST_LOOK = 31840, DEFAULT_ICON = 31824;
+	private static final int FIRST_LOOK = 42624, LAST_LOOK = 42640, DEFAULT_ICON = 42624;
 	// "[Soulbound] +3 Soul XP | Tier 8 | 3,614 / 7,540 (47%)" (and the older "tier 8, 3,614 / 7,540 (47%)")
 	private static final Pattern PROGRESS = Pattern.compile(
 		"(?i)\\[Soulbound\\] .*?tier (\\d+)(?:(?:,| \\|) ([\\d,]+) / ([\\d,]+) \\((\\d+)%\\)| \\(max\\))");

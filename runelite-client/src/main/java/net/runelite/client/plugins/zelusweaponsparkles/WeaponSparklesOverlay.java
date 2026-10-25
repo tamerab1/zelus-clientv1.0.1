@@ -59,27 +59,27 @@ class WeaponSparklesOverlay extends Overlay
 	/** Diagnostics, logged every 5s while a bow is around (2026-10-15 hunt for invisible sparkles). */
 	private int dWielders, dBowFaces, dSpawned, dGone, dBehind, dOccluded, dDrawn, dOccluders;
 	private long dLast;
-	static final int CELESTIAL_TWISTED_BOW = 31778;
+	static final int CELESTIAL_TWISTED_BOW = 42578;
 	/**
 	 * Every celestial weapon (Division Rivals ornament kit, 2026-10-15): Twisted bow, Armadyl godsword, Voidwaker and
 	 * Harmonised nightmare staff (celestial). All are recoloured to the same navy (hue 43, saturation 4), which is how
 	 * the sparkles find their faces on the model.
 	 */
 	static boolean isCelestial(int itemId) {
-		return itemId == CELESTIAL_TWISTED_BOW || itemId == 31784 || itemId == 31786 || itemId == 31788
-			|| itemId == 31818; // Nightfall bow (celestial)
+		return itemId == CELESTIAL_TWISTED_BOW || itemId == 42584 || itemId == 42586 || itemId == 42588
+			|| itemId == 42618; // Nightfall bow (celestial)
 	}
 	/** NPCs that wear the bow (a baked copy with the same navy limbs): the Cape Forge Master at home. */
 	private static final int[] BOW_NPCS = {3873};
 	/** (hsl >> 7) & 0x1ff of the bow's navy limbs: hue 43, saturation 4. */
 	private static final int BOW_HUE_SAT = 43 << 3 | 4;
 	/**
-	 * The Rivals Champion cape (31782, worn by players; baked onto the Rivals Overseer npc 3351): subtle star specks
+	 * The Rivals Champion cape (42582, worn by players; baked onto the Rivals Overseer npc 3351): subtle star specks
 	 * on its gold trim, which the cache recolour puts on hue 9 / saturation 6 (2026-10-15).
 	 */
-	static final int CHAMPION_CAPE = 31782, OVERSEER_NPC = 3351;
+	static final int CHAMPION_CAPE = 42582, OVERSEER_NPC = 3351;
 	/** Zelus Cosmic Wings (donator, cape slot): star motes from the whole indigo wing (recoloured 62/76 -> 47886/47898, zelus_donator_items.txt). */
-	static final int COSMIC_WINGS = 31810;
+	static final int COSMIC_WINGS = 42610;
 	private static final int WINGS_HUE_SAT = 46 << 3 | 6;
 	private static final Color[] STAR_TINTS = {
 		new Color(255, 255, 255), new Color(200, 220, 255), new Color(220, 200, 255), new Color(255, 244, 210)
