@@ -1,10 +1,11 @@
 {
   "_comment": [
     "Zelus custom 117HD materials, ported from the old Material enum (117HD v1.5 era) on the rev 241 branch.",
-    "NOT loaded by 117HD. These texture ids collide with vanilla rev 241 textures, so the entries are added",
-    "to src/main/resources/rs117/hd/scene/materials.json by the rev 241 id-remap step, once each custom",
-    "texture has its new id. 'template' = copy every setting from that vanilla material (name and",
-    "vanillaTextureIndex replaced); null = plain entry ({name, vanillaTextureIndex}) like RED_LAVA."
+    "Source for tools/rev241-migration/client/apply_hd_materials.py (server repo), which writes them into",
+    "src/main/resources/rs117/hd/scene/materials.json at their rev 241 texture ids (custom textures 130-215",
+    "moved +258, e.g. GLACIAL_CAPE 154 -> 412). Edit here and re-run the tool; it replaces its own entries.",
+    "'template' = copy every setting from that vanilla material (name and vanillaTextureIndex replaced);",
+    "null = plain entry ({name, vanillaTextureIndex}) like RED_LAVA. Not loaded by 117HD itself."
   ],
   "materials": [
     {

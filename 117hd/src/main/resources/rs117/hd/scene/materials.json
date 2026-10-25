@@ -1125,6 +1125,226 @@
     "doubleSidedFaces": true
   },
   {
+    "name": "GLACIAL_CAPE",
+    "vanillaTextureIndex": 412,
+    "flowMap": "LAVA_FLOW_MAP",
+    "overrideBaseColor": true,
+    "unlit": true,
+    "flowMapStrength": 0.02,
+    "flowMapDuration": [
+      12.0,
+      4.0
+    ]
+  },
+  {
+    "name": "COSMIC_CAPE",
+    "vanillaTextureIndex": 413,
+    "flowMap": "LAVA_FLOW_MAP",
+    "overrideBaseColor": true,
+    "unlit": true,
+    "flowMapStrength": 0.02,
+    "flowMapDuration": [
+      12.0,
+      4.0
+    ]
+  },
+  {
+    "name": "VOID_CAPE",
+    "vanillaTextureIndex": 414,
+    "flowMap": "LAVA_FLOW_MAP",
+    "overrideBaseColor": true,
+    "unlit": true,
+    "flowMapStrength": 0.02,
+    "flowMapDuration": [
+      12.0,
+      4.0
+    ]
+  },
+  {
+    "name": "GLACIAL_FIRE_CAPE",
+    "vanillaTextureIndex": 466,
+    "flowMap": "LAVA_FLOW_MAP",
+    "overrideBaseColor": true,
+    "unlit": true,
+    "flowMapStrength": 0.05,
+    "flowMapDuration": [
+      12.0,
+      4.0
+    ],
+    "scrollSpeed": [
+      -0.0,
+      0.33333334
+    ]
+  },
+  {
+    "name": "UMBRAL_FIRE_CAPE",
+    "vanillaTextureIndex": 467,
+    "flowMap": "LAVA_FLOW_MAP",
+    "overrideBaseColor": true,
+    "unlit": true,
+    "flowMapStrength": 0.05,
+    "flowMapDuration": [
+      12.0,
+      4.0
+    ],
+    "scrollSpeed": [
+      -0.0,
+      0.33333334
+    ]
+  },
+  {
+    "name": "VENOMOUS_FIRE_CAPE",
+    "vanillaTextureIndex": 465,
+    "flowMap": "LAVA_FLOW_MAP",
+    "overrideBaseColor": true,
+    "unlit": true,
+    "flowMapStrength": 0.05,
+    "flowMapDuration": [
+      12.0,
+      4.0
+    ],
+    "scrollSpeed": [
+      -0.0,
+      0.33333334
+    ]
+  },
+  {
+    "name": "FROSTBRAND",
+    "vanillaTextureIndex": 415
+  },
+  {
+    "name": "SOULFIRE",
+    "vanillaTextureIndex": 416
+  },
+  {
+    "name": "VOIDREND",
+    "vanillaTextureIndex": 417
+  },
+  {
+    "name": "EMBERFORGED",
+    "vanillaTextureIndex": 418
+  },
+  {
+    "name": "PRISMATIC",
+    "vanillaTextureIndex": 419
+  },
+  {
+    "name": "FESTIVE",
+    "vanillaTextureIndex": 420
+  },
+  {
+    "name": "NIGHTWEAVER",
+    "vanillaTextureIndex": 421
+  },
+  {
+    "name": "KINGSGUARD",
+    "vanillaTextureIndex": 422
+  },
+  {
+    "name": "WILDFANG",
+    "vanillaTextureIndex": 423
+  },
+  {
+    "name": "FORSAKEN",
+    "vanillaTextureIndex": 424
+  },
+  {
+    "name": "BROODMOTHER",
+    "vanillaTextureIndex": 425
+  },
+  {
+    "name": "GRIZZLEMAW",
+    "vanillaTextureIndex": 426
+  },
+  {
+    "name": "SKYHUNTER",
+    "vanillaTextureIndex": 427
+  },
+  {
+    "name": "GLACIUS",
+    "vanillaTextureIndex": 428
+  },
+  {
+    "name": "SOLARFLARE",
+    "vanillaTextureIndex": 429
+  },
+  {
+    "name": "WILDSTALKER",
+    "vanillaTextureIndex": 430
+  },
+  {
+    "name": "MAGMACORE",
+    "vanillaTextureIndex": 431
+  },
+  {
+    "name": "STARHEART",
+    "vanillaTextureIndex": 432
+  },
+  {
+    "name": "GALAXY_PARTYHAT",
+    "vanillaTextureIndex": 433
+  },
+  {
+    "name": "TOXIC_PARTYHAT",
+    "vanillaTextureIndex": 434
+  },
+  {
+    "name": "INFERNO_PARTYHAT",
+    "vanillaTextureIndex": 435
+  },
+  {
+    "name": "FROSTBITE_PARTYHAT",
+    "vanillaTextureIndex": 436
+  },
+  {
+    "name": "AURORA_SANTA",
+    "vanillaTextureIndex": 437
+  },
+  {
+    "name": "MIDNIGHT_SANTA",
+    "vanillaTextureIndex": 438
+  },
+  {
+    "name": "CANDY_CANE_SANTA",
+    "vanillaTextureIndex": 439
+  },
+  {
+    "name": "GOLDEN_SANTA",
+    "vanillaTextureIndex": 440
+  },
+  {
+    "name": "SERAPHIC_AGGY",
+    "vanillaTextureIndex": 441
+  },
+  {
+    "name": "BLOOMFIRE_SPROUT",
+    "vanillaTextureIndex": 442
+  },
+  {
+    "name": "EMBERSCALE_DRACO",
+    "vanillaTextureIndex": 443
+  },
+  {
+    "name": "COSMIC_FLOW",
+    "vanillaTextureIndex": 444
+  },
+  {
+    "name": "ELECTRIC_FLOW",
+    "vanillaTextureIndex": 445
+  },
+  {
+    "name": "INFERNAL_FURY",
+    "vanillaTextureIndex": 453
+  },
+  {
+    "name": "COSMIC_CHAMPION",
+    "vanillaTextureIndex": 454
+  },
+  {
+    "name": "BOXING_CHEST_FLOW",
+    "vanillaTextureIndex": 455
+  },
+  {
     "name": "GLASS_1",
     "parent": "NONE",
     "subsurface": 1
