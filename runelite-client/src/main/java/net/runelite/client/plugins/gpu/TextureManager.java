@@ -41,7 +41,10 @@ class TextureManager
 	// Zelus: the custom cache has more than 256 textures (soul / boss / forge textures from 235 up); the animation table
 	// in geom.glsl is indexed by min(id, TEXTURE_COUNT - 1), so every texture past 256 was drawn standing still (flat).
 	// 384 vec2 = 768 uniform components, inside GL 4.3's 1024 minimum for the geometry stage.
-	static final int TEXTURE_COUNT = 384;
+	// rev 241: Jagex has 388 textures and ours moved to 388-473 (474 in all); with 384 every custom texture was
+	// clamped to texture 383's animation and drew speckled/smeared under GPU (117HD has its own table).
+	// 512 vec2 = 1024 uniform components: GL's minimum for the vertex stage, desktop GPUs allow 4096+.
+	static final int TEXTURE_COUNT = 512;
 	private static final int TEXTURE_SIZE = 128;
 
 	int initTextureArray(TextureProvider textureProvider)
