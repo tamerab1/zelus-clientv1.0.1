@@ -38,7 +38,7 @@ public final class CacheVersionGuard
 	// 2026-10-21: back to v1.1.105 -- NO forced full resync with the next client release. The live server could never
 	// serve 4 cache archives (see server project_js5_unservable_archives memory), so a forced full re-download would
 	// have stalled every player on the loading screen. Incremental js5 updates cover v1.1.106-v1.1.108 already.
-	private static final String CACHE_REVISION = "v1.1.105-full-resync"; // v1.1.105: Soulbound weapons, Soul Sanctuary (map m48_54 / l48_54), ~25 cache rounds (models, textures, sprites, spotanims, interfaces 1174-1176, locs)
+	private static final String CACHE_REVISION = "v1.2.0-rev241"; // rev 241: a new game revision, every index changed (one clean re-download)
 
 	// See beginSession()/markSessionSafe()'s javadocs -- a SEPARATE, always-on safety net
 	// (independent of CACHE_REVISION) for a player closing the client mid-download, or any other
