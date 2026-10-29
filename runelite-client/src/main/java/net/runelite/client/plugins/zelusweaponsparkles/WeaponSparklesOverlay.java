@@ -100,6 +100,8 @@ class WeaponSparklesOverlay extends Overlay
 	private static final float DEPTH_TOLERANCE = 24f;
 	/** Same near plane as the client's projection. */
 	private static final float NEAR = 50f;
+	/** Scenery occlusion needs the camera depth, which rev 241's integer camera no longer gives right: off for now. */
+	private static final boolean OCCLUSION = false;
 
 	private static final Color[] TINTS = {
 		new Color(255, 214, 90), new Color(255, 236, 150), new Color(255, 250, 215), new Color(240, 190, 60)
@@ -142,6 +144,9 @@ class WeaponSparklesOverlay extends Overlay
 		float eastMin = Float.MAX_VALUE, eastMax = -Float.MAX_VALUE, northMin = Float.MAX_VALUE, northMax = -Float.MAX_VALUE;
 	}
 
+	/** For the static projection: RuneLite's own model projection, right for every renderer. */
+	private static Client CLIENT;
+
 	/** The camera for this frame, captured once. */
 	private static final class Camera
 	{
@@ -152,6 +157,7 @@ class WeaponSparklesOverlay extends Overlay
 	WeaponSparklesOverlay(Client client)
 	{
 		this.client = client;
+		CLIENT = client;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -237,7 +243,7 @@ class WeaponSparklesOverlay extends Overlay
 			float y = p.y[a] + s.u * (p.y[b] - p.y[a]) + s.v * (p.y[c] - p.y[a]);
 			float depth = p.depth[a] + s.u * (p.depth[b] - p.depth[a]) + s.v * (p.depth[c] - p.depth[a]);
 			// the depth test uses the anchor point; the drift is only a few pixels of shimmer
-			if (safelyCovered(occluders.get(s.owner), x, y, depth - DEPTH_TOLERANCE))
+			if (OCCLUSION && safelyCovered(occluders.get(s.owner), x, y, depth - DEPTH_TOLERANCE))
 			{
 				dOccluded++;
 				continue;
@@ -476,6 +482,33 @@ class WeaponSparklesOverlay extends Overlay
 			p.maxX = Math.max(p.maxX, sx);
 			p.minY = Math.min(p.minY, sy);
 			p.maxY = Math.max(p.maxY, sy);
+		}
+		// rev 241 (2026-10-28): under GPU / 117 HD the integer camera no longer matches what is drawn, so the specks
+		// landed in a small cluster away from the weapon. The screen positions come from RuneLite's own projection
+		// (Perspective.modelToCanvas, the one model outlines use); the depth above still serves the occlusion test.
+		if (CLIENT != null && count > 0)
+		{
+			int[] x2d = new int[count], y2d = new int[count];
+			Perspective.modelToCanvas(CLIENT, CLIENT.getTopLevelWorldView(), count, x, y, height, rotate & 2047, vx, vz, vy, x2d, y2d);
+			p.minX = p.minY = Float.MAX_VALUE;
+			p.maxX = p.maxY = -Float.MAX_VALUE;
+			for (int i = 0; i < count; i++)
+			{
+				if (x2d[i] == Integer.MIN_VALUE)
+				{
+					p.depth[i] = NEAR - 1; // off screen: never drawn
+					continue;
+				}
+				// the integer camera's depth is wrong on rev 241 (specks only showed from straight above): RuneLite's
+				// projection decides what is on screen, and the speck is kept in front
+				p.depth[i] = Math.max(p.depth[i], NEAR + 1);
+				p.x[i] = x2d[i];
+				p.y[i] = y2d[i];
+				p.minX = Math.min(p.minX, p.x[i]);
+				p.maxX = Math.max(p.maxX, p.x[i]);
+				p.minY = Math.min(p.minY, p.y[i]);
+				p.maxY = Math.max(p.maxY, p.y[i]);
+			}
 		}
 		return p;
 	}

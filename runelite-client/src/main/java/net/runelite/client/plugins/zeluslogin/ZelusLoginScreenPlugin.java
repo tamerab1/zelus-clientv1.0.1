@@ -38,6 +38,9 @@ public class ZelusLoginScreenPlugin extends Plugin
 	private static final String LOGIN_STATE_CLASS = "ar";
 	private static final String LOGIN_STATE_FIELD = "cq";
 	private static final int LOGIN_STATE_GETTER_MULTIPLIER = -1568212415;
+	private static final String LOGIN_STRINGS_CLASS = "ks";
+	private static final String[] LOGIN_MESSAGE_SOURCES = {"io", "iw", "is"};
+	private static final String[] LOGIN_MESSAGE_FIELDS = {"cg", "ct", "co"};
 
 	@Inject
 	private Client client;
@@ -92,6 +95,7 @@ public class ZelusLoginScreenPlugin extends Plugin
 			{
 				throw new IllegalStateException("login state did not change (" + client.getLoginIndex() + ")");
 			}
+			setLoginMessage();
 			// the client's own welcome -> login transition fills the remembered username; skipping it means doing that here
 			String remembered = client.getPreferences().getRememberedUsername();
 			if (remembered != null && !remembered.isEmpty() && (client.getUsername() == null || client.getUsername().isEmpty()))
@@ -105,6 +109,25 @@ public class ZelusLoginScreenPlugin extends Plugin
 		{
 			unavailable = true;
 			log.warn("Zelus login screen: can't skip the Jagex Account panel on this client", e);
+		}
+	}
+
+	/**
+	 * The client's own switch to state 2 ({@code ar.ce}) also fills the three login message lines {@code ar.cg/ct/co}
+	 * from {@code ks.io/iw/is} ("", "Enter your username/email &amp; password.", ""). Skipping it left the box blank.
+	 */
+	private void setLoginMessage() throws ReflectiveOperationException
+	{
+		ClassLoader loader = client.getClass().getClassLoader();
+		Class<?> strings = Class.forName(LOGIN_STRINGS_CLASS, true, loader);
+		Class<?> login = Class.forName(LOGIN_STATE_CLASS, true, loader);
+		for (int i = 0; i < LOGIN_MESSAGE_FIELDS.length; i++)
+		{
+			Field source = strings.getDeclaredField(LOGIN_MESSAGE_SOURCES[i]);
+			Field target = login.getDeclaredField(LOGIN_MESSAGE_FIELDS[i]);
+			source.setAccessible(true);
+			target.setAccessible(true);
+			target.set(null, source.get(null));
 		}
 	}
 

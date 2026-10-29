@@ -58,8 +58,18 @@ public class AnimationSmoothingPlugin extends Plugin
 		client.setAnimationInterpolationFilter(AnimationSmoothingPlugin::isAnimationInterpolatable);
 	}
 
+	/** The last Jagex sequence in the rev 241 cache; everything above is ours. */
+	private static final int LAST_JAGEX_SEQUENCE = 15162;
+
 	private static boolean isAnimationInterpolatable(int animId)
 	{
+		// Zelus: our custom sequences (hand-rigged bosses, e.g. Baelgor 19010-19015) aren't authored for tweening --
+		// blending two of their frames swung the wing bones far out of the model. Play them frame by frame.
+		if (animId > LAST_JAGEX_SEQUENCE)
+		{
+			return false;
+		}
+
 		switch (animId)
 		{
 			case AnimationID.DOG_UPDATE_JACKAL_DEFEND:

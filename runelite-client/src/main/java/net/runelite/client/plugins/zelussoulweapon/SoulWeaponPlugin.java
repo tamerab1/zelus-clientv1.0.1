@@ -74,23 +74,27 @@ public class SoulWeaponPlugin extends Plugin
 	private TierBox box;
 
 	/** {group, child} of every model preview to sway: selector cards (1175: 24 / 73 / 122) and the Check window (1174:20). */
-	private static final int[][] SWAY = {{1175, 24}, {1175, 73}, {1175, 122}, {1174, 20}, {1176, 15}};
+	private static final int[][] SWAY = {{1175, 24}, {1175, 73}, {1175, 122}, {1174, 20}, {1176, 25}};
 
 	/**
 	 * Soul Tree (1176) component ids, from .dev/cache-restore-tool BuildSoulTreeInterface: the weapon glow, the particle
 	 * dots (in the weapon's clip layer), the nodes (track ring = hover area, mastered halo, hidden tooltip text) and the
 	 * aura cards (card = hover area, hidden tooltip text).
 	 */
-	private static final int TREE = 1176, TREE_GLOW = 13, TREE_FIRST_PARTICLE = 16, TREE_PARTICLES = 10, TREE_FIRST_NODE = 32,
-		TREE_NODE_STRIDE = 21, TREE_NODE_HALO = 6, TREE_NODE_TIP = 20, TREE_FIRST_AURA = 120, TREE_AURA_STRIDE = 11,
-		TREE_AURA_TIP = 10, TREE_MODAL = 159, TREE_GEM = 6, TREE_GEM_Y = 45;
+	// Soul Tree round 7 (2026-10-28, BuildSoulTreeInterface): the 3x2 matrix, the weapon on a dais (no glow sprite)
+	// round 8 (2026-10-29): three cards; each node is an 84x56 card (its frame is the hover area for the tooltip)
+	// round 9 (2026-10-29): Weapon / Talents pages; the stage's model is 260x118, the node cards 104x48
+	private static final int TREE = 1176, TREE_FIRST_PARTICLE = 26, TREE_PARTICLES = 8, TREE_FIRST_NODE = 59,
+		TREE_NODES = 6, TREE_NODE_STRIDE = 20, TREE_NODE_HALO = 8, TREE_NODE_TIP = 19, TREE_FIRST_AURA = 203,
+		TREE_AURA_STRIDE = 11, TREE_AURA_TIP = 10, TREE_MODAL = 239, TREE_GEM = 6, TREE_GEM_Y = 45;
 	/** Particle life (client ticks), rise height and the clip box's floor; the halos and glow breathe on PULSE_PERIOD. */
-	private static final int PARTICLE_LIFE = 140, PARTICLE_RISE = 46, PARTICLE_FLOOR = 50, PULSE_PERIOD = 120;
+	private static final int PARTICLE_LIFE = 140, PARTICLE_RISE = 84, PARTICLE_FLOOR = 108, PULSE_PERIOD = 120;
 	/**
 	 * A gentle sway (yaw +-SWAY_AMPLITUDE of 2048, one cycle every SWAY_PERIOD client ticks of 20 ms) around the angle the
 	 * server set -- the item's own icon showcase angle. A full spin turned thin weapons (the spire) edge-on and unreadable.
 	 */
 	private static final int SWAY_AMPLITUDE = 150, SWAY_PERIOD = 300;
+	private static final int SPIN_SPEED = 7; // yaw units per client tick (2048 a turn)
 	/** Per preview: {showcase yaw the server set, the yaw this plugin last wrote}. */
 	private final int[][] sway = new int[SWAY.length][];
 	private int swayTick;
@@ -113,7 +117,10 @@ public class SoulWeaponPlugin extends Plugin
 			{
 				sway[i] = new int[]{w.getRotationY(), 0};
 			}
-			int yaw = (sway[i][0] + offset) & 2047;
+			// the check window and the Soul Tree turn the weapon a full, continuous circle (one turn ~ 6 s); the
+			// three-look select window keeps its gentle sway so the looks stay side by side
+			boolean spin = SWAY[i][0] == 1174 || SWAY[i][0] == 1176;
+			int yaw = (sway[i][0] + (spin ? swayTick * SPIN_SPEED : offset)) & 2047;
 			w.setRotationZ(0); // the server sends a showcase camera (zoom, X, Y); an item icon's own Z tilt doesn't apply
 			w.setRotationY(yaw);
 			sway[i][1] = yaw;
@@ -124,13 +131,12 @@ public class SoulWeaponPlugin extends Plugin
 	/** Soul Tree: particles drift up out of the weapon's glow and fade; the glow and the mastered halos breathe. */
 	private void animateSoulTree()
 	{
-		Widget glow = client.getWidget(TREE, TREE_GLOW);
-		if (glow == null || glow.isHidden())
+		Widget root = client.getWidget(TREE, 0);
+		if (root == null || root.isHidden())
 		{
 			return;
 		}
 		double breath = (1 + Math.sin(2 * Math.PI * swayTick / PULSE_PERIOD)) / 2; // 0..1
-		glow.setOpacity((int) (90 * (1 - breath)));
 		// the points gem bobs gently (+-2 px on a slow sine) beside "Available Points"
 		Widget gem = client.getWidget(TREE, TREE_GEM);
 		if (gem != null)
@@ -138,7 +144,7 @@ public class SoulWeaponPlugin extends Plugin
 			gem.setOriginalY(TREE_GEM_Y + (int) Math.round(2 * Math.sin(2 * Math.PI * swayTick / PULSE_PERIOD)));
 			gem.revalidate();
 		}
-		for (int n = 0; n < 3; n++)
+		for (int n = 0; n < TREE_NODES; n++)
 		{
 			Widget halo = client.getWidget(TREE, TREE_FIRST_NODE + n * TREE_NODE_STRIDE + TREE_NODE_HALO);
 			if (halo != null && !halo.isHidden())
@@ -155,7 +161,7 @@ public class SoulWeaponPlugin extends Plugin
 			}
 			int age = (swayTick + i * (PARTICLE_LIFE / TREE_PARTICLES) * 7) % PARTICLE_LIFE;
 			double life = age / (double) PARTICLE_LIFE;
-			int baseX = 14 + i * 10;
+			int baseX = 76 + i * 15;
 			dot.setOriginalX(baseX + (int) Math.round(3 * Math.sin(2 * Math.PI * (life * 1.5 + i * 0.37))));
 			dot.setOriginalY(PARTICLE_FLOOR - (int) (PARTICLE_RISE * life));
 			dot.setOpacity((int) (255 * Math.abs(2 * life - 1))); // fades in, then out as it rises
@@ -176,7 +182,7 @@ public class SoulWeaponPlugin extends Plugin
 			return; // closed, or the Rank Up confirmation is up: nothing under it is hoverable
 		}
 		Point mouse = client.getMouseCanvasPosition();
-		for (int n = 0; n < 3; n++)
+		for (int n = 0; n < TREE_NODES; n++)
 		{
 			int node = TREE_FIRST_NODE + n * TREE_NODE_STRIDE;
 			if (showTip(mouse, client.getWidget(TREE, node), client.getWidget(TREE, node + TREE_NODE_TIP)))
