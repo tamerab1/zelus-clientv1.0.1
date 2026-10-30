@@ -382,20 +382,10 @@ r 29 80
 n
 r 29 78
 
-// beekeeper random
+// Zelus: Pandora's lair -- the pinball room rebuilt 41x41 over the whole map square (was the beekeeper, gravedigger and
+// pinball randoms, a quarter each; "hide unrelated maps" then deleted most of the arena)
 n
-m 30 78
-C 0 4 3 7
-
-// gravedigger random
-n
-m 30 78
-C 0 0 3 3
-
-// pinball random
-n
-m 30 78
-C 4 4 7 7
+r 30 78
 
 // giant mole lair
 n
