@@ -100,8 +100,11 @@ class WeaponSparklesOverlay extends Overlay
 	private static final float DEPTH_TOLERANCE = 24f;
 	/** Same near plane as the client's projection. */
 	private static final float NEAR = 50f;
-	/** Scenery occlusion needs the camera depth, which rev 241's integer camera no longer gives right: off for now. */
-	private static final boolean OCCLUSION = false;
+	/**
+	 * Specks behind scenery are hidden. Rev 241 had this off (2026-10-28): the old camera maths read the 14-bit integer
+	 * camera with the 2048-step tables, so every depth was wrong. camera() now mirrors Perspective.modelToCanvas exactly.
+	 */
+	private static final boolean OCCLUSION = true;
 
 	private static final Color[] TINTS = {
 		new Color(255, 214, 90), new Color(255, 236, 150), new Color(255, 250, 215), new Color(240, 190, 60)
@@ -144,9 +147,6 @@ class WeaponSparklesOverlay extends Overlay
 		float eastMin = Float.MAX_VALUE, eastMax = -Float.MAX_VALUE, northMin = Float.MAX_VALUE, northMax = -Float.MAX_VALUE;
 	}
 
-	/** For the static projection: RuneLite's own model projection, right for every renderer. */
-	private static Client CLIENT;
-
 	/** The camera for this frame, captured once. */
 	private static final class Camera
 	{
@@ -157,7 +157,6 @@ class WeaponSparklesOverlay extends Overlay
 	WeaponSparklesOverlay(Client client)
 	{
 		this.client = client;
-		CLIENT = client;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -404,16 +403,31 @@ class WeaponSparklesOverlay extends Overlay
 	private Camera camera()
 	{
 		Camera c = new Camera();
-		// the integer camera, which every renderer keeps current (CPU, GPU and 117 HD). The precise "Fp" camera put every
-		// speck behind the camera in CPU mode and with HD on (2026-10-15), so it is not used
-		int pitch = client.getCameraPitch() & 2047, yaw = client.getCameraYaw() & 2047;
-		c.x = client.getCameraX();
-		c.y = client.getCameraY();
-		c.z = client.getCameraZ();
-		c.pitchSin = Perspective.SINE[pitch] / 65536f;
-		c.pitchCos = Perspective.COSINE[pitch] / 65536f;
-		c.yawSin = Perspective.SINE[yaw] / 65536f;
-		c.yawCos = Perspective.COSINE[yaw] / 65536f;
+		// the same camera Perspective.modelToCanvas uses on rev 241, so the specks' screen positions and depths match
+		// what is drawn: GPU / 117 HD project with the precise "Fp" camera (radians), CPU with the integer camera,
+		// whose pitch / yaw are now 14-bit (0-16383) and read through the SINEF14 tables
+		if (client.isGpu())
+		{
+			double pitch = client.getCameraFpPitch(), yaw = client.getCameraFpYaw();
+			c.x = client.getCameraFpX();
+			c.y = client.getCameraFpY();
+			c.z = client.getCameraFpZ();
+			c.pitchSin = (float) Math.sin(pitch);
+			c.pitchCos = (float) Math.cos(pitch);
+			c.yawSin = (float) Math.sin(yaw);
+			c.yawCos = (float) Math.cos(yaw);
+		}
+		else
+		{
+			int pitch = client.getCameraPitch() & 0x3fff, yaw = client.getCameraYaw() & 0x3fff;
+			c.x = client.getCameraX();
+			c.y = client.getCameraY();
+			c.z = client.getCameraZ();
+			c.pitchSin = Perspective.SINEF14[pitch];
+			c.pitchCos = Perspective.COSINEF14[pitch];
+			c.yawSin = Perspective.SINEF14[yaw];
+			c.yawCos = Perspective.COSINEF14[yaw];
+		}
 		c.midX = client.getViewportWidth() / 2f;
 		c.midY = client.getViewportHeight() / 2f;
 		c.offX = client.getViewportXOffset();
@@ -482,33 +496,6 @@ class WeaponSparklesOverlay extends Overlay
 			p.maxX = Math.max(p.maxX, sx);
 			p.minY = Math.min(p.minY, sy);
 			p.maxY = Math.max(p.maxY, sy);
-		}
-		// rev 241 (2026-10-28): under GPU / 117 HD the integer camera no longer matches what is drawn, so the specks
-		// landed in a small cluster away from the weapon. The screen positions come from RuneLite's own projection
-		// (Perspective.modelToCanvas, the one model outlines use); the depth above still serves the occlusion test.
-		if (CLIENT != null && count > 0)
-		{
-			int[] x2d = new int[count], y2d = new int[count];
-			Perspective.modelToCanvas(CLIENT, CLIENT.getTopLevelWorldView(), count, x, y, height, rotate & 2047, vx, vz, vy, x2d, y2d);
-			p.minX = p.minY = Float.MAX_VALUE;
-			p.maxX = p.maxY = -Float.MAX_VALUE;
-			for (int i = 0; i < count; i++)
-			{
-				if (x2d[i] == Integer.MIN_VALUE)
-				{
-					p.depth[i] = NEAR - 1; // off screen: never drawn
-					continue;
-				}
-				// the integer camera's depth is wrong on rev 241 (specks only showed from straight above): RuneLite's
-				// projection decides what is on screen, and the speck is kept in front
-				p.depth[i] = Math.max(p.depth[i], NEAR + 1);
-				p.x[i] = x2d[i];
-				p.y[i] = y2d[i];
-				p.minX = Math.min(p.minX, p.x[i]);
-				p.maxX = Math.max(p.maxX, p.x[i]);
-				p.minY = Math.min(p.minY, p.y[i]);
-				p.maxY = Math.max(p.maxY, p.y[i]);
-			}
 		}
 		return p;
 	}
