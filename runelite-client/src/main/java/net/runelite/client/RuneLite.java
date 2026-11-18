@@ -365,6 +365,7 @@ public class RuneLite
 		final OkHttpClient okHttpClient = buildHttpClient(options.has("insecure-skip-tls-verification"));
 		RuneLiteAPI.CLIENT = okHttpClient;
 
+		net.runelite.client.rs.OldLauncherNotice.showIfNeeded(); // Zelus launcher -> point to the Karn Beta launcher
 		SplashScreen.init();
 		SplashScreen.stage(0, "Retrieving client", "");
 		boolean startedOk = false;
