@@ -47,7 +47,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.swing.JComponent;
@@ -116,7 +115,7 @@ public class RuneliteColorPicker extends JDialog
 		setResizable(false);
 		setSize(FRAME_WIDTH, FRAME_HEIGHT);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		setIconImages(Arrays.asList(ClientUI.ICON_128, ClientUI.ICON_16));
+		setIconImages(ClientUI.ICONS);
 
 		JPanel content = new JPanel(new BorderLayout());
 		content.setBorder(new EmptyBorder(15, 15, 15, 15));

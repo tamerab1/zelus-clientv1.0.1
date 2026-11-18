@@ -1,6 +1,6 @@
 title=Old School RuneScape
 adverturl=http://www.runescape.com/g=oldscape/bare_advert.ws
-codebase=http://play.zelusrsps.com/
+codebase=http://play.karnps.com/
 cachedir=oldschool
 storebase=0
 initial_jar=gamepack_6140455.jar
@@ -43,7 +43,7 @@ msg=information=Information
 msg=err_get_file=Error getting file
 msg=new_version=Update available! You can now launch the client directly from the OldSchool website.\nGet the new version from the link on the OldSchool homepage: http://oldschool.runescape.com/
 msg=new_version_linktext=Open OldSchool Homepage
-msg=new_version_link=http://zelusrsps.com/
+msg=new_version_link=https://karnps.com/
 param=14=0
 param=12=1
 param=11=https://auth.jagex.com/
@@ -55,7 +55,7 @@ param=9=ElZAIrq5NpKN6D3mDdihco3oPeYN2KFy2DCquj7JMmECPmLrDP3Bnw
 param=15=0
 param=10=5
 param=8=true
-param=17=http://play.zelusrsps.com:9292/worlds.ws
+param=17=http://play.karnps.com:9292/worlds.ws
 param=2=https://payments.jagex.com/operator/v1/
 param=18=
 param=4=45569

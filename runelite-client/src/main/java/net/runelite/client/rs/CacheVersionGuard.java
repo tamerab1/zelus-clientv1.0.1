@@ -74,7 +74,7 @@ public final class CacheVersionGuard
 
 		try
 		{
-			File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+			File jagexCache = new File(System.getProperty("user.home"), ".karn/.runelite/jagexcache");
 			if (jagexCache.exists())
 			{
 				log.info("Cache revision {} not yet applied on this machine -- wiping local jagexcache once", CACHE_REVISION);
@@ -148,7 +148,7 @@ public final class CacheVersionGuard
 				{
 					log.info("Previous session never reached the login screen and made no progress -- wiping "
 						+ "local jagexcache once in case it is stuck on a corrupt file");
-					File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+					File jagexCache = new File(System.getProperty("user.home"), ".karn/.runelite/jagexcache");
 					if (jagexCache.exists())
 					{
 						deleteRecursively(jagexCache);
@@ -182,7 +182,7 @@ public final class CacheVersionGuard
 	}
 
 	/** The engine's cache folder (jagexcache/oldschool/LIVE). */
-	static final File LIVE_CACHE = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache/oldschool/LIVE");
+	static final File LIVE_CACHE = new File(System.getProperty("user.home"), ".karn/.runelite/jagexcache/oldschool/LIVE");
 
 	/** Bytes in the engine's cache folder right now (0 when it doesn't exist yet). */
 	static long cacheSize()
@@ -247,7 +247,7 @@ public final class CacheVersionGuard
 		try
 		{
 			log.info("Attempting immediate jagexcache wipe due to: {}", reason);
-			File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+			File jagexCache = new File(System.getProperty("user.home"), ".karn/.runelite/jagexcache");
 			if (jagexCache.exists())
 			{
 				deleteRecursively(jagexCache);
@@ -282,7 +282,7 @@ public final class CacheVersionGuard
 		try
 		{
 			log.info("Applying cache wipe requested by a previous crashed session");
-			File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+			File jagexCache = new File(System.getProperty("user.home"), ".karn/.runelite/jagexcache");
 			if (jagexCache.exists())
 			{
 				deleteRecursively(jagexCache);

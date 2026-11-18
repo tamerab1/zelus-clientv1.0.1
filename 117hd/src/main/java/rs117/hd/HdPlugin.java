@@ -539,6 +539,15 @@ public class HdPlugin extends Plugin {
 
 	@Override
 	protected void startUp() {
+		// Karn (2026-11-11): once per profile, a cycle still on the old "Default" (an hourly day / night) becomes "Off";
+		// a mode the player picked themselves is kept, and they can turn the cycle back on in the settings
+		var karnConfig = injector.getInstance(net.runelite.client.config.ConfigManager.class);
+		if (karnConfig.getConfiguration(HdPluginConfig.CONFIG_GROUP, "karnDaylightOff") == null) {
+			if ("DEFAULT".equals(karnConfig.getConfiguration(HdPluginConfig.CONFIG_GROUP, HdPluginConfig.KEY_DAYLIGHT_CYCLE)))
+				karnConfig.setConfiguration(HdPluginConfig.CONFIG_GROUP, HdPluginConfig.KEY_DAYLIGHT_CYCLE, rs117.hd.config.DaylightCycle.OFF);
+			karnConfig.setConfiguration(HdPluginConfig.CONFIG_GROUP, "karnDaylightOff", true);
+		}
+
 		// Lazily inject members into our singletons
 		for (var clazz : LAZY_SINGLETONS)
 			injector.injectMembers(injector.getInstance(clazz));

@@ -82,7 +82,10 @@ public class SpriteManager
 		}
 
 		SpritePixels[] sp = client.getSprites(client.getIndexSprites(), archive, 0);
-		if (sp == null)
+		// rev 241 emptied some sprites our plugins still ask for: an out-of-range frame or a 0x0 one threw
+		// "Width (0) and height (0) cannot be <= 0" on every login (beta audit 2026-11-18); treat it as missing
+		if (sp == null || file < 0 || file >= sp.length || sp[file] == null
+			|| sp[file].getWidth() <= 0 || sp[file].getHeight() <= 0)
 		{
 			return null;
 		}

@@ -94,7 +94,7 @@ public interface HdPluginConfig extends Config
 		section = generalSettings
 	)
 	default int drawDistance() {
-		return 50;
+		return 90; // Karn: high-quality defaults (was 50)
 	}
 
 	@Range(
@@ -112,7 +112,7 @@ public interface HdPluginConfig extends Config
 		section = generalSettings
 	)
 	default int detailDrawDistance() {
-		return 70;
+		return 90; // Karn (was 70)
 	}
 
 	String KEY_EXPANDED_MAP_LOADING_CHUNKS = "expandedMapLoadingChunks";
@@ -539,7 +539,7 @@ public interface HdPluginConfig extends Config
 		section = lightingSettings
 	)
 	default DynamicLights dynamicLights() {
-		return DynamicLights.SOME;
+		return DynamicLights.MANY; // Karn (was SOME)
 	}
 
 	String KEY_OBJECT_LIGHTS = "objectLights";
@@ -656,7 +656,8 @@ public interface HdPluginConfig extends Config
 		section = daylightCycleSettings
 	)
 	default DaylightCycle daylightCycle() {
-		return DaylightCycle.DEFAULT;
+		// Karn: constant daylight by default (the hourly cycle made home go night-dark for part of every hour)
+		return DaylightCycle.OFF;
 	}
 
 	String KEY_NIGHT_BRIGHTNESS = "nightBrightness";

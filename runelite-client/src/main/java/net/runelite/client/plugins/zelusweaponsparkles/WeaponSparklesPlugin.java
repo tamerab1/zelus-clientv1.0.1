@@ -12,7 +12,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * sparkle too, and the item icon twinkles in the inventory, bank and equipment (CelestialItemOverlay).
  */
 @PluginDescriptor(
-	name = "Zelus Weapon Sparkles",
+	name = "Karn Weapon Sparkles",
 	description = "Golden stardust along the Twisted bow (celestial)",
 	enabledByDefault = true
 )

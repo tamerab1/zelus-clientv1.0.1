@@ -357,6 +357,7 @@ public class LoginScreenPlugin extends Plugin implements KeyListener
 			{
 				image = ImageIO.read(LoginScreenPlugin.class.getResourceAsStream("login_background.png"));
 			}
+			image = withLogo(image);
 			SpritePixels pixels = ImageUtil.getImageSpritePixels(image, client);
 			client.setLoginScreen(pixels);
 			logoOverlay.setBackground(image);
@@ -414,6 +415,36 @@ public class LoginScreenPlugin extends Plugin implements KeyListener
 			}));
 		}
 	}
+
+	/**
+	 * Karn: the bundled background has no logo of its own; login_logo.png is drawn over it at its native size,
+	 * centred horizontally at the top (where the engine's own logo would sit). Missing logo = plain background.
+	 */
+	private static BufferedImage withLogo(BufferedImage background)
+	{
+		BufferedImage logo;
+		try
+		{
+			synchronized (ImageIO.class)
+			{
+				logo = ImageIO.read(LoginScreenPlugin.class.getResourceAsStream("login_logo.png"));
+			}
+		}
+		catch (Exception e)
+		{
+			log.warn("no login logo, using the plain background", e);
+			return background;
+		}
+		BufferedImage out = new BufferedImage(background.getWidth(), background.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		java.awt.Graphics2D g = out.createGraphics();
+		g.drawImage(background, 0, 0, null);
+		g.drawImage(logo, (background.getWidth() - logo.getWidth()) / 2, LOGO_Y, null);
+		g.dispose();
+		return out;
+	}
+
+	/** Top of login_logo.png on the login screen; its first visible row is 4 px down, so this sits it at the very top. */
+	private static final int LOGO_Y = -4;
 
 	private void restoreLoginScreen()
 	{

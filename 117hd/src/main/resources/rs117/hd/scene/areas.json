@@ -12,6 +12,12 @@
     ]
   },
   {
+    "name": "KARN_FIVE_SEALS",
+    "aabbs": [
+      [ 3264, 4608, 3327, 4671 ]
+    ]
+  },
+  {
     "name": "EVIL_BOB_ISLAND",
     "aabbs": [
       [ 2496, 4748, 2559, 4801 ]

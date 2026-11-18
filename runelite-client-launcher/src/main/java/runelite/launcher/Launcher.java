@@ -58,7 +58,7 @@ import javax.imageio.ImageIO;
 import javax.swing.GrayFilter;
 
 public class Launcher {
-	static File REASON_HOME = new File(System.getProperty("user.home"), ".zelus");
+	static File REASON_HOME = new File(System.getProperty("user.home"), ".karn");
 	static File CLIENT_FILE = new File(REASON_HOME, "betaclient.jar");
 	static File JRE_DIR = new File(REASON_HOME, "jre");
 
@@ -96,11 +96,11 @@ public class Launcher {
 			LauncherLog.error("Launcher failed to start", t);
 			SplashScreen.stop();
 			javax.swing.JOptionPane.showMessageDialog(null,
-					"Zelus failed to start.\n\n" + t.getClass().getSimpleName()
+					"Karn failed to start.\n\n" + t.getClass().getSimpleName()
 							+ (t.getMessage() != null ? (": " + t.getMessage()) : "")
 							+ "\n\nA log file has been saved to:\n" + LauncherLog.logFile().getAbsolutePath()
 							+ "\n\nPlease share this file if you need help.",
-					"Zelus Launcher - Error",
+					"Karn Beta - Error",
 					javax.swing.JOptionPane.ERROR_MESSAGE);
 			System.exit(1);
 		}
@@ -128,6 +128,7 @@ public class Launcher {
 		SplashScreen.init();
 
 		SplashScreen.stage(0.0, "Loading...", "Checking system.");
+		checkLauncherUpdate(properties);
 
 		// Auto-repair: an extracted JRE can end up corrupt/partial (interrupted
 		// extraction, disk error, a stray file left over from a bad previous
@@ -211,9 +212,49 @@ public class Launcher {
 		if (looksLikeStartupCrash && allowRetry) {
 			LauncherLog.info("Client exited abnormally " + ranForMs
 					+ "ms after starting (exit code " + exitCode + ") -- wiping jagexcache and retrying once");
-			File jagexCache = new File(System.getProperty("user.home"), ".zelus/.runelite/jagexcache");
+			File jagexCache = new File(System.getProperty("user.home"), ".karn/.runelite/jagexcache");
 			deleteRecursive(jagexCache);
 			launchClientWithAutoRecovery(false);
+		}
+	}
+
+	/** where players get a new launcher build (the website's Download page) */
+	static final String DOWNLOAD_PAGE = "https://karnps.com/play";
+
+	/**
+	 * Launcher self-update check (beta 2026-11-18). CI stamps {@code launcher_version} (the build number) into
+	 * properties.ini and publishes the same number as {@code launcher.version} on the release; when the release is newer
+	 * the player is offered the Download page. An installed launcher can't safely replace its own running executable, so
+	 * it only points at the new build. Never blocks the launch: a dev build (version 0) or any network error skips it.
+	 */
+	static void checkLauncherUpdate(Properties properties) {
+		try {
+			int local = Integer.parseInt(properties.getProperty("launcher_version", "0").trim());
+			if (local <= 0)
+				return;
+			HttpURLConnection c = (HttpURLConnection) new URL(CLIENT_REPO + CLIENT_VERSION + "/launcher.version").openConnection();
+			c.setConnectTimeout(5000);
+			c.setReadTimeout(5000);
+			c.setInstanceFollowRedirects(true);
+			if (c.getResponseCode() != 200)
+				return;
+			int remote;
+			try (InputStream in = c.getInputStream()) {
+				remote = Integer.parseInt(new String(in.readAllBytes()).trim());
+			}
+			LauncherLog.info("Launcher build " + local + ", latest " + remote);
+			if (remote <= local)
+				return;
+			int[] choice = { 1 };
+			SwingUtilities.invokeAndWait(() -> choice[0] = javax.swing.JOptionPane.showOptionDialog(null,
+				"A new Karn Beta launcher is available (build " + remote + ", you have " + local + ").\n"
+					+ "Your game still updates itself; the new launcher brings launcher fixes.",
+				"Karn Beta update", javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.INFORMATION_MESSAGE,
+				null, new String[] { "Download", "Later" }, "Download"));
+			if (choice[0] == 0 && java.awt.Desktop.isDesktopSupported())
+				java.awt.Desktop.getDesktop().browse(java.net.URI.create(DOWNLOAD_PAGE));
+		} catch (Exception e) {
+			LauncherLog.info("Launcher update check skipped: " + e);
 		}
 	}
 
@@ -251,7 +292,7 @@ public class Launcher {
 	/**
 	 * Minimal file logger for the launcher's own bootstrap process (JRE/client
 	 * sync, extraction, process start) — separate from the actual game
-	 * client's own logback-based logging under .zelus/.runelite/logs/.
+	 * client's own logback-based logging under .karn/.runelite/logs/.
 	 * Previously any launcher-level failure just printed a stack trace to
 	 * stdout, which is invisible if the player launched by double-clicking
 	 * (no console attached) — they'd just see nothing happen, with no way to
@@ -609,13 +650,13 @@ public class Launcher {
 		private volatile String progressText = null;
 
 		private SplashScreen() {
-			setTitle("RuneLite Launcher");
+			setTitle("Karn Beta");
 
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setUndecorated(true);
 			setLayout(null);
 			Container pane = getContentPane();
-			pane.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			pane.setBackground(ColorScheme.KARN_VOID);
 
 			Font font = new Font(Font.DIALOG, Font.PLAIN, 12);
 
@@ -628,15 +669,15 @@ public class Launcher {
 			int y = WIDTH;
 
 			pane.add(action);
-			action.setForeground(Color.WHITE);
+			action.setForeground(ColorScheme.KARN_GOLD);
 			action.setBounds(0, y, WIDTH, 16);
 			action.setHorizontalAlignment(SwingConstants.CENTER);
 			action.setFont(font);
 			y += action.getHeight() + PAD;
 
 			pane.add(progress);
-			progress.setForeground(ColorScheme.BRAND_LUNEX);
-			progress.setBackground(ColorScheme.BRAND_LUNEX.darker().darker());
+			progress.setForeground(ColorScheme.KARN_CRIMSON);
+			progress.setBackground(ColorScheme.KARN_CRIMSON_DARK);
 			progress.setBorder(new EmptyBorder(0, 0, 0, 0));
 			progress.setBounds(0, y, WIDTH, 14);
 			progress.setFont(font);
@@ -654,7 +695,7 @@ public class Launcher {
 			y += 12 + PAD;
 
 			pane.add(subAction);
-			subAction.setForeground(Color.LIGHT_GRAY);
+			subAction.setForeground(ColorScheme.KARN_TEXT);
 			subAction.setBounds(0, y, WIDTH, 16);
 			subAction.setHorizontalAlignment(SwingConstants.CENTER);
 			subAction.setFont(font);
@@ -1157,6 +1198,12 @@ public class Launcher {
 		public static final Color BRAND_ORANGE = new Color(220, 138, 0);
 		/* Lunex branding colors */
 		public static final Color BRAND_LUNEX = new Color(189, 0, 229);
+		// Karn Crimson & Forged Gold (the website palette, 2026-11-18)
+		public static final Color KARN_VOID = new Color(9, 8, 10);
+		public static final Color KARN_CRIMSON = new Color(184, 29, 36);
+		public static final Color KARN_CRIMSON_DARK = new Color(54, 12, 16);
+		public static final Color KARN_GOLD = new Color(229, 184, 75);
+		public static final Color KARN_TEXT = new Color(201, 190, 178);
 		/* Lunex branding transparent ALT: 146, 35, 218 */
 		public static final Color BRAND_LUNEX_TRANSPARENT = new Color(123, 35, 218, 120);
 		/* The orange color used for the branding's accents, with lowered opacity */

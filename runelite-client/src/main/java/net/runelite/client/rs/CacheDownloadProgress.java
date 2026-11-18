@@ -150,7 +150,7 @@ public final class CacheDownloadProgress
 				String progress = now - lastGrowthAt > STALL_MS
 					? String.format("%d%% - %.1f MB - waiting for server", percent, size / MB)
 					: String.format("%d%% - %.1f MB - %.1f MB/s", percent, size / MB, bytesPerSecond / MB);
-				SplashScreen.stage(fraction, "Downloading game data", "Please keep Zelus open", progress);
+				SplashScreen.stage(fraction, "Downloading game data", "Please keep Karn open", progress);
 			}
 			else
 			{

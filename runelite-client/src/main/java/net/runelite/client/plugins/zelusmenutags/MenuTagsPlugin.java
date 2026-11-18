@@ -14,7 +14,7 @@ import net.runelite.client.plugins.PluginDescriptor;
  * colour tags, which the menu does draw, are kept.
  */
 @PluginDescriptor(
-	name = "Zelus Menu Tags",
+	name = "Karn Menu Tags",
 	description = "Removes unsupported <shad> tags from right-click menu entries",
 	enabledByDefault = true,
 	hidden = true

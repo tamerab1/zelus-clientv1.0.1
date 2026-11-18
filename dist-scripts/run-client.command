@@ -12,6 +12,6 @@ java -Xmx768m --add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED --add-opens=ja
 
 if [ $? -ne 0 ]; then
     echo ""
-    echo "Zelus exited with an error."
+    echo "Karn exited with an error."
     read -n 1 -s -r -p "Press any key to close..."
 fi

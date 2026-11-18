@@ -88,7 +88,7 @@ class InventoryInspector extends DevToolsFrame
 
 		setLayout(new BorderLayout());
 		setTitle("RuneLite Inventory Inspector");
-		setIconImages(Arrays.asList(ClientUI.ICON_128, ClientUI.ICON_16));
+		setIconImages(ClientUI.ICONS);
 
 		tree.setBorder(new EmptyBorder(2, 2, 2, 2));
 		tree.setRootVisible(false);

@@ -403,6 +403,21 @@ public class Hooks implements Callbacks
 			log.error("Error during overlay rendering", ex);
 		}
 
+		// Karn: the character picker paints over the login screen (overlays only render while logged in)
+		java.util.function.Consumer<Graphics2D> loginPainter = net.runelite.client.ui.LoginScreenPainter.get();
+		if (loginPainter != null && (client.getGameState() == net.runelite.api.GameState.LOGIN_SCREEN
+			|| client.getGameState() == net.runelite.api.GameState.LOGGING_IN))
+		{
+			try
+			{
+				loginPainter.accept(graphics2d);
+			}
+			catch (Exception ex)
+			{
+				log.error("Error painting the login screen", ex);
+			}
+		}
+
 		notifier.processFlash(graphics2d);
 
 		// Draw clientUI overlays

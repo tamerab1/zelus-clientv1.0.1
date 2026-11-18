@@ -40,9 +40,9 @@ import net.runelite.client.util.Text;
  * and hover tooltips (the server writes each node's / aura card's tooltip into a hidden text component).
  */
 @PluginDescriptor(
-	name = "Zelus Soulbound Weapon",
+	name = "Karn Soulbound Weapon",
 	description = "Shows your Soulbound weapon's tier and progress to the next tier",
-	tags = {"zelus", "soulbound", "weapon", "tier", "xp"},
+	tags = {"karn", "soulbound", "weapon", "tier", "xp"},
 	enabledByDefault = true
 )
 public class SoulWeaponPlugin extends Plugin

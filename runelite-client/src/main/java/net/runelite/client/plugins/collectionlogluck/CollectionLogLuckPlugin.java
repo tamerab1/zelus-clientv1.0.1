@@ -31,7 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Calculates and displays luck for Zelus collection log items, ported from peanubnutter's
+ * Calculates and displays luck for Karn collection log items, ported from peanubnutter's
  * collection-log-luck RuneLite plugin (https://github.com/peanubnutter/collection-log-luck).
  *
  * Two things differ deliberately from the original, both driven by Zelus not being live OSRS:
@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
 @Slf4j
 @PluginDescriptor(
 	name = "Collection Log Luck",
-	description = "Calculates and displays luck for Zelus collection log items.",
+	description = "Calculates and displays luck for Karn collection log items.",
 	tags = {"collection", "log", "luck"},
 	enabledByDefault = false
 )

@@ -11,7 +11,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * TOP CHAMPIONS rows in the world. The full top 20 is the board's "View" window (interface 1169).
  */
 @PluginDescriptor(
-	name = "Zelus Championship Board",
+	name = "Karn Championship Board",
 	description = "Live top 5 on the Pit Championship Board",
 	enabledByDefault = true
 )

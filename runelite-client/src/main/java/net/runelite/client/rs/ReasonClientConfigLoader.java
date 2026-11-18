@@ -43,10 +43,10 @@ public class ReasonClientConfigLoader {
 
 		final RSConfig config = new RSConfig();
 
-		// Opt-in only (-Dzelus.local=true) -- never affects a normal launch. Points at the
-		// permanent zelus.test/127.0.0.1 hosts entry instead of the real zelusrsps.com domains,
+		// Opt-in only (-Dkarn.local=true; -Dzelus.local=true still works) -- never affects a normal launch. Points at the
+		// permanent zelus.test/127.0.0.1 hosts entry instead of the real karnps.com domains,
 		// so local testing never again requires editing hosts for the production domain.
-		String resourceName = Boolean.getBoolean("zelus.local") ? "/jav_config_local.ws" : "/jav_config.ws";
+		String resourceName = (Boolean.getBoolean("karn.local") || Boolean.getBoolean("zelus.local")) ? "/jav_config_local.ws" : "/jav_config.ws";
 		InputStreamReader localReader = new InputStreamReader(getClass().getResourceAsStream(resourceName));
 		InputStreamReader reader = localReader;
 

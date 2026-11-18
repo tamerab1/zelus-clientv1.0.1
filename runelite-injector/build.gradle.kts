@@ -2,7 +2,7 @@ plugins {
     `java-library`
 }
 
-description = "Zelus patches applied on top of RuneLite's injected client"
+description = "Karn patches applied on top of RuneLite's injected client"
 
 dependencies {
     implementation("net.runelite:runelite-api:${project.version}")

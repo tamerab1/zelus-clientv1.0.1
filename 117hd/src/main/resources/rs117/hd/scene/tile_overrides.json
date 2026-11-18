@@ -1,5 +1,13 @@
 [
   {
+    "name": "KARN_FIVE_SEALS_ROOM_FLOORS",
+    "description": "The Five Seals (region 13128, the old Clan Wars arena copy; instances map back to it), 2026-11-17: the five room carpets (map values 74 green, 163 red, 38 blue, 70 purple, 76 yellow) and their one-tile-wide white room numbers (30). 117HD blended neighbouring tiles and smeared the digits into blobs (user screenshots). Flat colour, hard tile edges, like GPU mode. Listed first so no vanilla rule outranks it.",
+    "area": "KARN_FIVE_SEALS",
+    "overlayIds": [ 30, 38, 70, 74, 76, 163 ],
+    "groundMaterial": "NONE",
+    "blended": false
+  },
+  {
     "name": "ZELUS_HOME_CASINO_CHECKER",
     "description": "Zelus home casino floor (2026-10-21): the red / gold checker (map values 72 / 157 = overlays 71 / 156) as hard-edged gloss tiles. Without a rule the tiles fell back to NONE (dirt, blended) and smudged into muddy diamonds. Listed first so no area-wide rule outranks it.",
     "area": "ZELUS_HOME_CASINO_FLOOR",
@@ -14,6 +22,46 @@
     "overlayIds": [ 1, 2, 3, 4, 9, 10, 11, 37, 86, 116, 117 ],
     "groundMaterial": "MARBLE_1_GLOSS",
     "blended": false
+  },
+  {
+    "name": "KARN_HOME_PLAZA_STONE",
+    "description": "Karn home (new RSPSi map, 2026-11-11): the plaza stone (overlay map value 338, Cam Torum brick texture tinted #373229). GPU mode darkens a textured tile by the overlay's lightness; 117HD drew the texture at full brightness (a white plaza). Same texture, unblended, set to a dark neutral grey to match GPU mode.",
+    "area": "ZELUS_HOME",
+    "overlayIds": [ 338 ],
+    "groundMaterial": "KARN_HOME_BRICK",
+    "blended": false,
+    "setSaturation": 0,
+    "setLightness": 34
+  },
+  {
+    "name": "KARN_HOME_PLAZA_STONE_2",
+    "description": "Karn home (new RSPSi map, 2026-11-11): the plaza stone (overlay map value 339, Cam Torum brick texture tinted #373229). GPU mode darkens a textured tile by the overlay's lightness; 117HD drew the texture at full brightness (a white plaza). Same texture, unblended, set to a dark neutral grey to match GPU mode.",
+    "area": "ZELUS_HOME",
+    "overlayIds": [ 339 ],
+    "groundMaterial": "KARN_HOME_BRICK_2",
+    "blended": false,
+    "setSaturation": 0,
+    "setLightness": 34
+  },
+  {
+    "name": "KARN_HOME_BANK_CHECKER",
+    "description": "Karn home bank floor (new RSPSi map, 2026-11-11): the dark checker (overlay map value 258, texture 116 with a black tint). GPU mode draws it dark; 117HD drew the texture at full brightness (a black-and-white checker). Same texture, unblended, dark neutral grey to match GPU mode.",
+    "area": "ZELUS_HOME",
+    "overlayIds": [ 258 ],
+    "groundMaterial": "KARN_HOME_SKULLS",
+    "blended": false,
+    "setSaturation": 0,
+    "setLightness": 30
+  },
+  {
+    "name": "KARN_HOME_BANK_CHECKER_2",
+    "description": "Karn home bank floor (new RSPSi map, 2026-11-11): the dark checker (overlay map value 261, texture 119 with a black tint). GPU mode draws it dark; 117HD drew the texture at full brightness (a black-and-white checker). Same texture, unblended, dark neutral grey to match GPU mode.",
+    "area": "ZELUS_HOME",
+    "overlayIds": [ 261 ],
+    "groundMaterial": "KARN_HOME_SKULLS_DARK",
+    "blended": false,
+    "setSaturation": 0,
+    "setLightness": 30
   },
   {
     "name": "DEFAULT_GRASS",

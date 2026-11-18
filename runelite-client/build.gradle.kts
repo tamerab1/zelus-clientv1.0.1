@@ -47,7 +47,7 @@ java {
 dependencies {
     api("net.runelite:runelite-api:${project.version}")
     implementation(project(":jshell"))
-    // Zelus: the injected client is not pulled from repo.runelite.net -- runelite-injector patches
+    // Karn: the injected client is not pulled from repo.runelite.net -- runelite-injector patches
     // lib/runelite-injected-original.bin into runelite-injected.bin, which is bundled as a resource
     // and loaded by ReasonClientLoader (see generateInjectedData below).
     runtimeOnly(project(":117hd"))
@@ -215,19 +215,20 @@ tasks.javadoc {
     title = "RuneLite Client ${project.version} API"
 }
 
-// ---- Zelus
+// ---- Karn
 
 // Builds lib/runelite-injected.bin from lib/runelite-injected-original.bin (RuneLite's injected client)
-// with the Zelus patches (host, RSA key, HWID, ...).
+// with the Karn patches (host, RSA key, HWID, ...).
 val generateInjectedData = tasks.register<JavaExec>("generateInjectedData") {
     classpath = project(":runelite-injector").the<SourceSetContainer>()["main"].runtimeClasspath
     workingDir = rootDir
     mainClass = "pl.polishcivil.runelite.injector.Injector"
-    // Forwards -Dzelus.local=true (if passed to gradle) so RSA.java picks the local-dev keypair.
+    // Forwards -Dkarn.local=true (or the old -Dzelus.local=true) (if passed to gradle) so RSA.java picks the local-dev keypair.
     // Unset by default -- always builds the production-targeting client unless explicitly opted in.
+    System.getProperty("karn.local")?.let { systemProperty("karn.local", it) }
     System.getProperty("zelus.local")?.let { systemProperty("zelus.local", it) }
     // Declared as an input so Gradle reruns this whenever the flag changes between builds.
-    inputs.property("zelusLocal", System.getProperty("zelus.local", "false"))
+    inputs.property("karnLocal", System.getProperty("karn.local", System.getProperty("zelus.local", "false")))
     inputs.file(rootProject.file("lib/runelite-injected-original.bin"))
     outputs.file(rootProject.file("lib/runelite-injected.bin"))
 }

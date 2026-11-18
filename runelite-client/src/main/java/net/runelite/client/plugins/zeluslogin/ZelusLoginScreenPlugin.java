@@ -25,7 +25,7 @@ import net.runelite.client.plugins.PluginDescriptor;
  */
 @Slf4j
 @PluginDescriptor(
-	name = "Zelus Login Screen",
+	name = "Karn Login Screen",
 	description = "Skips the Jagex Account upgrade panel on the login screen",
 	hidden = true,
 	enabledByDefault = true
@@ -102,13 +102,13 @@ public class ZelusLoginScreenPlugin extends Plugin
 			{
 				client.setUsername(remembered);
 			}
-			log.info("Zelus login screen: skipped login state {} to the username/password box (remembered username: {})",
+			log.info("Karn login screen: skipped login state {} to the username/password box (remembered username: {})",
 				state, remembered == null || remembered.isEmpty() ? "none" : "set");
 		}
 		catch (ReflectiveOperationException | RuntimeException e)
 		{
 			unavailable = true;
-			log.warn("Zelus login screen: can't skip the Jagex Account panel on this client", e);
+			log.warn("Karn login screen: can't skip the Jagex Account panel on this client", e);
 		}
 	}
 

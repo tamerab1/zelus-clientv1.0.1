@@ -20,8 +20,8 @@ import net.runelite.client.plugins.PluginDescriptor;
  * current animation frame. Only icons actually being drawn are re-rendered.
  */
 @PluginDescriptor(
-	name = "Zelus Animated Item Icons",
-	description = "Animates the textures of Zelus animated-texture items in inventory, bank and equipment icons",
+	name = "Karn Animated Item Icons",
+	description = "Animates the textures of Karn animated-texture items in inventory, bank and equipment icons",
 	enabledByDefault = true
 )
 public class AnimatedItemIconsPlugin extends Plugin

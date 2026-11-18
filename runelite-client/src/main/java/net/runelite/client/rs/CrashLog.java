@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Uncaught exceptions also go to their own small file, %USERPROFILE%/.zelus/logs/client_crash.log (2026-10-21, players
+ * Uncaught exceptions also go to their own small file, %USERPROFILE%/.karn/logs/client_crash.log (2026-10-21, players
  * reporting crashes): client.log rotates and mixes in everything else, so a player can send just this file. Capped at
  * 1 MB (the old file is kept once as client_crash.log.1). Never throws: a crash logger must not cause a crash.
  */
@@ -24,7 +24,7 @@ public final class CrashLog
 
 	public static File file()
 	{
-		return new File(System.getProperty("user.home"), ".zelus" + File.separator + "logs" + File.separator + "client_crash.log");
+		return new File(System.getProperty("user.home"), ".karn" + File.separator + "logs" + File.separator + "client_crash.log");
 	}
 
 	public static synchronized void write(Thread thread, Throwable throwable)

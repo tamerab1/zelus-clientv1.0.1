@@ -278,7 +278,7 @@ public interface ChatColorConfig extends Config
 		position = 23,
 		keyName = "opaqueServerMessage",
 		name = "Server message",
-		description = "Color of server messages (eg. 'Welcome to Zelus').",
+		description = "Color of server messages (eg. 'Welcome to Karn').",
 		section = opaqueSection
 	)
 	Color opaqueServerMessage();
@@ -675,7 +675,7 @@ public interface ChatColorConfig extends Config
 		position = 73,
 		keyName = "transparentServerMessage",
 		name = "Server message (transparent)",
-		description = "Color of server messages (eg. 'Welcome to Zelus') (transparent).",
+		description = "Color of server messages (eg. 'Welcome to Karn') (transparent).",
 		section = transparentSection
 	)
 	Color transparentServerMessage();

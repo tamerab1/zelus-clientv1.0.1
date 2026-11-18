@@ -22,9 +22,9 @@ import net.runelite.client.util.Text;
  * (io.ruin.model.entity.npc.combatpet.BestiaryBurst), so it needs no extra protocol.
  */
 @PluginDescriptor(
-	name = "Zelus Combat Pet Timer",
+	name = "Karn Combat Pet Timer",
 	description = "Shows how long your Ascended Bestiary combat pet has left",
-	tags = {"zelus", "bestiary", "pet", "timer"},
+	tags = {"karn", "bestiary", "pet", "timer"},
 	enabledByDefault = true
 )
 public class CombatPetTimerPlugin extends Plugin

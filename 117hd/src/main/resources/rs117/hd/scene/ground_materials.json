@@ -740,5 +740,29 @@
     "materials": [
       "BRICK_CAM_TORUM_2_STONE"
     ]
+  },
+  {
+    "name": "KARN_HOME_BRICK",
+    "materials": [
+      "BRICK_CAM_TORUM"
+    ]
+  },
+  {
+    "name": "KARN_HOME_BRICK_2",
+    "materials": [
+      "BRICK_CAM_TORUM_2"
+    ]
+  },
+  {
+    "name": "KARN_HOME_SKULLS",
+    "materials": [
+      "SKULLS"
+    ]
+  },
+  {
+    "name": "KARN_HOME_SKULLS_DARK",
+    "materials": [
+      "SKULLS_FOG_DARK"
+    ]
   }
 ]

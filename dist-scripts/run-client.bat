@@ -11,6 +11,6 @@ java -Xmx768m --add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED --add-opens=ja
 
 if errorlevel 1 (
     echo.
-    echo Zelus exited with an error. Press any key to close.
+    echo Karn exited with an error. Press any key to close.
     pause >nul
 )

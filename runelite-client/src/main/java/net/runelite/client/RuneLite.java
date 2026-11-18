@@ -132,7 +132,59 @@ public class RuneLite
 
 	static
 	{
+		migrateLegacyHome();
 		isolateIfSecondInstance();
+	}
+
+	/**
+	 * Karn rebrand: the client home moved from ~/.zelus to ~/.karn. On the first run, copy the player's
+	 * settings, profiles and screenshots across so nothing is lost. The engine cache (jagexcache), the
+	 * injected-client/xtea cache, logs and the instance lock are deliberately NOT copied, so the new
+	 * folder starts with a clean cache download and can never inherit a mismatched one (js5crc).
+	 * The old folder is left untouched. Runs once: it does nothing as soon as ~/.karn/.runelite exists.
+	 */
+	private static void migrateLegacyHome()
+	{
+		try
+		{
+			Path home = Paths.get(System.getProperty("user.home"));
+			Path from = home.resolve(".zelus").resolve(".runelite");
+			Path to = home.resolve(".karn").resolve(".runelite");
+			if (Files.exists(to) || !Files.isDirectory(from))
+			{
+				return;
+			}
+			java.util.Set<String> skip = java.util.Set.of("jagexcache", "cache", "logs", "instance.lock");
+			Path staging = home.resolve(".karn").resolve(".runelite-migrating");
+			try (Stream<Path> stream = Files.walk(from))
+			{
+				for (Path source : (Iterable<Path>) stream::iterator)
+				{
+					Path rel = from.relativize(source);
+					if (rel.getNameCount() > 0 && skip.contains(rel.getName(0).toString()))
+					{
+						continue;
+					}
+					Path dest = staging.resolve(rel.toString());
+					if (Files.isDirectory(source))
+					{
+						Files.createDirectories(dest);
+					}
+					else
+					{
+						Files.copy(source, dest, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					}
+				}
+			}
+			// Only an all-or-nothing rename makes ~/.karn/.runelite appear, so a crash mid-copy just retries next launch.
+			Files.move(staging, to);
+			System.err.println("Copied settings from " + from + " to " + to);
+		}
+		catch (Exception e)
+		{
+			// Never block startup -- worst case the player starts with default settings.
+			System.err.println("Failed to copy settings from ~/.zelus (non-fatal): " + e);
+		}
 	}
 
 	private static void isolateIfSecondInstance()
@@ -140,13 +192,13 @@ public class RuneLite
 		try
 		{
 			File realHome = new File(System.getProperty("user.home"));
-			File lockDir = new File(realHome, ".zelus/.runelite");
+			File lockDir = new File(realHome, ".karn/.runelite");
 			lockDir.mkdirs();
 			instanceLockChannel = new FileOutputStream(new File(lockDir, "instance.lock")).getChannel();
 			instanceLock = instanceLockChannel.tryLock();
 			if (instanceLock == null)
 			{
-				File altHome = new File(realHome, ".zelus-multiclient-" + ProcessHandle.current().pid());
+				File altHome = new File(realHome, ".karn-multiclient-" + ProcessHandle.current().pid());
 				altHome.mkdirs();
 				System.setProperty("user.home", altHome.getAbsolutePath());
 				System.err.println("Another client instance is already running -- using an isolated cache "
@@ -160,7 +212,7 @@ public class RuneLite
 		}
 	}
 
-	public static final File RUNELITE_DIR = new File(System.getProperty("user.home"), ".zelus/.runelite");
+	public static final File RUNELITE_DIR = new File(System.getProperty("user.home"), ".karn/.runelite");
 	public static final File CACHE_DIR = new File(RUNELITE_DIR, "cache");
 	public static final File PLUGINS_DIR = new File(RUNELITE_DIR, "plugins");
 	public static final File SCREENSHOT_DIR = new File(RUNELITE_DIR, "screenshots");
@@ -329,7 +381,7 @@ public class RuneLite
 				ClassPreloader.preload();
 			}, "Preloader").start();
 
-			// Zelus always runs with developer tools available (and without the -ea requirement).
+			// Karn always runs with developer tools available (and without the -ea requirement).
 			final boolean developerMode = true;
 
 			log.info("RuneLite {} (launcher version {}) starting up, args: {}",
@@ -490,7 +542,7 @@ public class RuneLite
 			scheduledExecutorService.execute(() ->
 			{
 				telemetryClient.submitTelemetry();
-				// VM error reports stay off on Zelus (they'd go to RuneLite's servers).
+				// VM error reports stay off on Karn (they'd go to RuneLite's servers).
 			});
 		}
 
@@ -605,7 +657,7 @@ public class RuneLite
 	private static void copyJagexCache()
 	{
 		Path from = Paths.get(System.getProperty("user.home"), "jagexcache");
-		Path to = Paths.get(System.getProperty("user.home"), ".zelus/.runelite", "jagexcache");
+		Path to = Paths.get(System.getProperty("user.home"), ".karn/.runelite", "jagexcache");
 		if (Files.exists(to) || !Files.exists(from))
 		{
 			return;

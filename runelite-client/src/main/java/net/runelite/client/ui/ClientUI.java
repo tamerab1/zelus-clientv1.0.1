@@ -64,7 +64,6 @@ import java.awt.event.WindowFocusListener;
 import java.awt.image.BufferedImage;
 import java.time.Duration;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.TreeSet;
@@ -138,6 +137,13 @@ public class ClientUI
 	private static final String CONFIG_CLIENT_SIDEBAR_CLOSED = "clientSidebarClosed";
 	public static final BufferedImage ICON_128 = ImageUtil.loadImageResource(ClientUI.class, "runelite_128.png");
 	public static final BufferedImage ICON_16 = ImageUtil.loadImageResource(ClientUI.class, "runelite_16.png");
+	/** Karn: every size in karn_icon.ico, so Windows picks a sharp one for the taskbar (32-48 px) instead of stretching 16. */
+	public static final List<BufferedImage> ICONS = List.of(ICON_16,
+		ImageUtil.loadImageResource(ClientUI.class, "runelite_32.png"),
+		ImageUtil.loadImageResource(ClientUI.class, "runelite_48.png"),
+		ImageUtil.loadImageResource(ClientUI.class, "runelite_64.png"),
+		ICON_128,
+		ImageUtil.loadImageResource(ClientUI.class, "runelite_256.png"));
 
 	@Getter
 	private TrayIcon trayIcon;
@@ -345,7 +351,7 @@ public class ClientUI
 			}
 
 			frame.setTitle(frameTitle);
-			frame.setIconImages(Arrays.asList(ICON_128, ICON_16));
+			frame.setIconImages(ICONS);
 			frame.setLocationRelativeTo(frame.getOwner());
 			frame.setResizable(true);
 
